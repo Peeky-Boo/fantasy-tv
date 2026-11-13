@@ -13,6 +13,9 @@
   body.bg:after { content: "your TV picture"; position: fixed; left: 50%; top: 55%; transform: translate(-50%, -50%);
                   color: rgba(255,255,255,0.22); font-size: 3vw; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
   iframe { position: fixed; border: 0; background: transparent; visibility: hidden; }
+  /* the corner scoreboard fades and slides rather than blinking on and off */
+  #ticker { visibility: visible; opacity: 0; transform: translateX(-3vw); transition: opacity 0.45s ease, transform 0.45s ease; }
+  #ticker.on { opacity: 1; transform: none; }
   iframe.on { visibility: visible; }
   #toast { position: fixed; left: 1.2vw; bottom: 1.2vw; max-width: 45vw; padding: 0.7vw 1.2vw; border-radius: 0.8vw;
            background: rgba(10,14,22,0.85); color: #e9edf3; font-size: 1.1vw; opacity: 0; transition: opacity 0.4s; }
@@ -48,7 +51,13 @@
     cfg.speed = parseFloat(q.get('speed') || '2.4'); cfg.board = 0; cfg.seed = parseInt(q.get('seed') || '12', 10);
   }
   var DURATION = parseInt(q.get('duration') || (SHOWCASE ? '5' : '8'), 10);
-  var SOUND = flag('sound', true), TICKER = flag('ticker', true);
+  var SOUND = flag('sound', true);
+  // corner scoreboard: always (default), 'changes' = only when a score moves, 0 = off
+  var TICKER_MODE = (q.get('ticker') || '1').toLowerCase();
+  var TICKER = TICKER_MODE !== '0' && TICKER_MODE !== 'off' && TICKER_MODE !== 'false';
+  var ON_CHANGE = TICKER_MODE === 'changes';
+  // hold alerts and scores back this many seconds, to line up with a streaming delay
+  var DELAY = Math.max(0, Math.min(180, parseInt(q.get('delay') || '0', 10) || 0)) * 1000;
   var VOLUME = Math.max(0, Math.min(1, parseFloat(q.get('volume') || '0.12')));  // quiet by default
   if (VOLUME === 0) SOUND = false;
   if (flag('bg', false)) document.body.className = 'bg';
@@ -147,21 +156,33 @@
     if (window.console) console.log(msg);
   }
 
-  var tickerRows = 0, lastBoard = null;
+  var tickerRows = 0, lastBoard = null, lastScores = null, hideTimer = null;
   function board(b) {
     lastBoard = b;
     if (!TICKER) return;
     if (b.rows.length !== tickerRows) { tickerRows = b.rows.length; place(ticker, 760 * 0.75, (96 + 52 * tickerRows) * 0.75, 'top-left'); }
-    post(ticker, { type: 'board', board: b });
+    var scores = b.rows.map(function (r) { return r.a.pts + ':' + (r.b ? r.b.pts : ''); }).join('|');
+    var changed = lastScores !== null && scores !== lastScores;
+    var first = lastScores === null;
+    lastScores = scores;
+    if (!ON_CHANGE) { post(ticker, { type: 'board', board: b }); ticker.className = 'on'; return; }
+    if (!changed && !first) { post(ticker, { type: 'board', board: b }); return; }
+    // slide in first, then update, so the score changes animate where you can see them
+    var wasHidden = ticker.className !== 'on';
     ticker.className = 'on';
+    setTimeout(function () { post(ticker, { type: 'board', board: b }); }, wasHidden ? 500 : 0);
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function () { ticker.className = ''; }, first ? 10000 : 12000);
   }
+  // with a delay set, alerts and scores wait before appearing (the showcase never waits)
+  var later = function (fn) { return function (x) { if (DELAY && !SHOWCASE) setTimeout(function () { fn(x); }, DELAY); else fn(x); }; };
 
   if (flag('demo', false)) {
     FTA.demoAlerts().forEach(add);
     return;
   }
   if (!cfg.user) { toast('add ?user=YourSleeperName to the link'); return; }
-  var engine = new FTA.Engine(cfg, { alert: add, board: board, status: toast });
+  var engine = new FTA.Engine(cfg, { alert: later(add), board: later(board), status: toast });
   engine.start().catch(function (e) { toast(e.message); });
   window.ftaEngine = engine;
 })();
