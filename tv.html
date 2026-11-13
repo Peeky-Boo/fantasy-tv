@@ -87,7 +87,8 @@
   // Real stadium recordings, one file per moment in sounds/ (swap a file to change a sound)
   var MOMENTS = ['td', 'opp', 'def', 'turnover', 'fg', 'big', 'lead', 'league', 'final'];
   var clips = {};
-  if (SOUND) MOMENTS.forEach(function (m) { var c = new Audio('sounds/' + m + '.mp3'); c.preload = 'auto'; clips[m] = c; });
+  // in lite mode the app plays the sounds itself, so the page doesn't load its own copies
+  if (SOUND && !BRIDGE) MOMENTS.forEach(function (m) { var c = new Audio('sounds/' + m + '.mp3'); c.preload = 'auto'; clips[m] = c; });
   function moment(a) {
     if (a.kind === 'scores') return a.final ? 'final' : null;
     if (a.kind === 'matchups') return null;
