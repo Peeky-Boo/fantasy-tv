@@ -43,56 +43,61 @@
 <div class="wrap">
   <div class="hero">
     <h1>Put <span>Fantasy TV</span> on your Fire Stick</h1>
-    <p>Sleeper alerts over RedZone (or anything you're watching): touchdowns, sacks, big plays and a live scoreboard in the corner. About 10 minutes, once.</p>
+    <p>Sleeper alerts over RedZone (or anything you're watching): touchdowns, sacks, big plays and live scores. About 5 minutes with just the remote.</p>
     <nav>
+      <a href="#choose">Lite or Full?</a>
       <a href="#tv">1. Get the TV ready</a>
       <a href="#install">2. Install</a>
-      <a href="#permission">3. Permission</a>
+      <a href="#permission">3. Upgrade to Full</a>
       <a href="#use">4. Using it</a>
       <a href="#help">Help</a>
     </nav>
   </div>
 
+  <section id="choose">
+    <h2>Two versions, same app</h2>
+    <div class="choose">
+      <div class="card"><span class="tag">No computer</span><b>Lite</b><small>Install with Downloader on the Fire TV, nothing else. Alerts pop up for about 7 seconds; the scoreboard pops up when scores change.</small></div>
+      <div class="card"><span class="tag">Best</span><b>Full</b><small>Adds a 10-minute step with a laptop (or an Android phone). Animated alerts and a live scoreboard always in the corner.</small></div>
+    </div>
+    <p class="sub" style="margin-top:10px">Start with Lite. You can upgrade to Full any time; the app switches over by itself.</p>
+  </section>
+
   <section id="tv">
     <h2><span class="n">1</span> Get the TV ready</h2>
-    <p class="sub">With the Fire TV remote. Everyone does this part.</p>
+    <p class="sub">With the Fire TV remote.</p>
     <ol>
       <li><b>Settings &gt; My Fire TV &gt; About</b>: highlight your device name (the first line) and press the select button <b>7 times</b>, until it says you're a developer.</li>
-      <li>Back to <b>My Fire TV &gt; Developer options</b>: turn <b>ADB debugging</b> on.</li>
-      <li><b>My Fire TV &gt; About &gt; Network</b>: write down the <b>IP address</b> (it looks like <code>192.168.1.50</code>).</li>
+      <li>On the home screen, search for <b>Downloader</b> (the orange app by AFTVnews) and install it. It's free.</li>
+      <li><b>Settings &gt; My Fire TV &gt; Developer options &gt; Install unknown apps</b>: turn it on for <b>Downloader</b>.</li>
     </ol>
   </section>
 
   <section id="install">
-    <h2><span class="n">2</span> Install Fantasy TV</h2>
-    <p class="sub">Pick whichever suits you.</p>
-    <div class="choose">
-      <div class="card"><span class="tag">Easiest</span><b>A. With a laptop</b><small>Mac or Windows on the same Wi-Fi. Installs the app and does step 3 for you.</small></div>
-      <div class="card"><span class="tag">No laptop</span><b>B. With Downloader on the TV</b><small>Installs the app from the TV itself. Step 3 then needs a laptop or an Android phone.</small></div>
-    </div>
+    <h2><span class="n">2</span> Install Fantasy TV (Lite)</h2>
+    <ol>
+      <li>Open Downloader, select the address box and type:<br><span class="addr">peeky-boo.github.io/fantasy-tv/ftv.apk</span></li>
+      <li>Press <b>Go</b>. When it's downloaded, choose <b>Install</b>, then <b>Done</b> (let Downloader delete the file afterwards if it asks).</li>
+      <li>Open <b>Fantasy TV</b> from your apps, choose <b>Add your Sleeper username</b>, type it with the on-screen keyboard and press <b>Save</b>.</li>
+      <li>Choose <b>On</b>, then press <b>Back</b>. Try <b>Play the 1-minute demo</b> to see it working.</li>
+    </ol>
+    <p>That's Lite done: no computer needed. Carry on to step 3 only if you want the Full version.</p>
+  </section>
 
-    <h3>A. With a laptop</h3>
+  <section id="permission">
+    <h2><span class="n">3</span> Upgrade to Full <span style="font-weight:400;color:var(--muted);font-size:15px">(optional)</span></h2>
+    <p class="sub">Full needs permission to draw over other apps, and Fire TV only allows that from another device on your Wi-Fi. First, on the TV:</p>
+    <ol>
+      <li><b>Settings &gt; My Fire TV &gt; Developer options</b>: turn <b>ADB debugging</b> on.</li>
+      <li><b>My Fire TV &gt; About &gt; Network</b>: write down the <b>IP address</b> (it looks like <code>192.168.1.50</code>).</li>
+    </ol>
+    <h3>With a laptop (easiest)</h3>
     <ol>
       <li>On the laptop, open <a href="./">the setup page</a>, type your Sleeper username and pick your options.</li>
       <li>Type your TV's IP, copy the one line it gives you, and paste it into <b>Terminal</b> (Mac) or <b>PowerShell</b> (Windows).</li>
       <li>Watch the TV: when it asks <i>Allow USB debugging?</i>, tick <b>Always allow</b> and press <b>OK</b>.</li>
     </ol>
-    <p>That's it: skip to <a href="#use">step 4</a>.</p>
-
-    <h3>B. With Downloader on the TV</h3>
-    <ol>
-      <li>On the Fire TV home screen, search for <b>Downloader</b> (the orange app by AFTVnews) and install it. It's free.</li>
-      <li><b>Settings &gt; My Fire TV &gt; Developer options &gt; Install unknown apps</b>: turn it on for <b>Downloader</b>.</li>
-      <li>Open Downloader, select the address box and type:<br><span class="addr">peeky-boo.github.io/fantasy-tv/ftv.apk</span></li>
-      <li>Press <b>Go</b>. When it's downloaded, choose <b>Install</b>, then <b>Done</b> (you can let Downloader delete the file afterwards).</li>
-      <li>Now do <a href="#permission">step 3</a>.</li>
-    </ol>
-  </section>
-
-  <section id="permission">
-    <h2><span class="n">3</span> Give it permission to show over other apps</h2>
-    <p class="sub">Only if you installed with Downloader (route B). Fire TV only allows this one setting from another device on your Wi-Fi, never from the TV itself, so pick one:</p>
-
+    <p class="sub">This also installs the app if you skipped step 2.</p>
     <h3>With an Android phone</h3>
     <ol>
       <li>Install <b>Remote ADB Shell</b> from the Play Store (free).</li>
@@ -100,14 +105,7 @@
       <li>On the TV: <i>Allow USB debugging?</i> tick <b>Always allow</b>, press <b>OK</b>.</li>
       <li>In the phone app, type this and press Enter:<br><code>appops set app.fantasytv SYSTEM_ALERT_WINDOW allow</code></li>
     </ol>
-    <p class="sub">iPhones can't run this kind of app. If you only have an iPhone, borrow any laptop for 5 minutes (below), or ask a mate with an Android phone.</p>
-
-    <h3>With a laptop</h3>
-    <p>Easiest is route A above: it covers this step too. Or, if you already have Android's <code>adb</code> tool, run these two lines (with your TV's IP):</p>
-    <p><code>adb connect 192.168.1.50</code><br><code>adb shell appops set app.fantasytv SYSTEM_ALERT_WINDOW allow</code></p>
-
-    <h3>Then, on the TV</h3>
-    <p>Open <b>Fantasy TV</b> from your apps, choose <b>Add your Sleeper username</b>, type it with the on-screen keyboard and press <b>Save</b>.</p>
+    <p class="sub">iPhones can't run this kind of app. Lite works fine without it.</p>
   </section>
 
   <section id="use">
@@ -125,15 +123,15 @@
     <p class="sub">Tip: <b>Play the 1-minute demo</b> in the menu shows last week's real scores from your league as if live, to see it working any time.</p>
 
     <h3>Updating</h3>
-    <p>Install a new version the same way you installed it (route A's line again, or Downloader with the same address). Your settings and the permission are kept.</p>
+    <p>Install a new version the same way: Downloader with the same address (or the laptop line again). Your settings and the permission are kept.</p>
   </section>
 
   <section id="help">
     <h2>Help</h2>
     <table>
       <tr><th>Problem</th><th>Fix</th></tr>
-      <tr><td>The app says "One-off setup needed"</td><td>Step 3 hasn't been done yet.</td></tr>
-      <tr><td>The laptop or phone can't connect</td><td>Check ADB debugging is on, the TV's IP is right, and both are on the same Wi-Fi (not a guest network).</td></tr>
+      <tr><td>The menu says "Lite mode"</td><td>That's normal without step 3. Do step 3 for the Full version.</td></tr>
+      <tr><td>The laptop or phone can't connect (step 3)</td><td>Check ADB debugging is on, the TV's IP is right, and both are on the same Wi-Fi (not a guest network).</td></tr>
       <tr><td>No "Allow USB debugging?" on the TV</td><td>Turn ADB debugging off and on again, then reconnect.</td></tr>
       <tr><td>Nothing shows on the TV</td><td>Open Fantasy TV and check it says <b>On</b>.</td></tr>
       <tr><td>Alerts appear before the play</td><td>Set <b>Delay alerts</b> to 30 or 60 seconds.</td></tr>
