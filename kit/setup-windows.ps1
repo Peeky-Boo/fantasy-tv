@@ -1,7 +1,6 @@
 # Fantasy TV setup for Windows.
 # Installs the Fantasy TV app on your Fire TV, lets it show over other apps, and starts it.
-# After this it runs by itself, even after the TV restarts. Change settings from the
-# Fantasy TV app on the TV (Apps row).
+# After this, turn it on (and change settings) from the Fantasy TV app on the TV (Apps row).
 # Run from the command on the Fantasy TV setup page (it sets $AppUrl and $TvIp first).
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -13,13 +12,13 @@ if (-not $TvIp) { $TvIp = Read-Host "What's your Fire TV's IP address? (Fire TV:
 $Base = $AppUrl.Substring(0, $AppUrl.IndexOf('tv.html'))
 
 # your choices from the setup page, passed to the app
-$opt = @{ user = ''; league = ''; style = 'broadcast'; alerts = 'league'; sound = 'quiet'; ticker = '1' }
+$opt = @{ user = ''; league = ''; style = 'broadcast'; alerts = 'league'; sound = 'quiet'; ticker = '1'; delay = '0' }
 foreach ($kv in $AppUrl.Split('?')[1].Split('&')) {
   $k, $v = $kv.Split('=', 2)
   switch ($k) {
     'user' { $opt.user = [Uri]::UnescapeDataString($v) } 'league' { $opt.league = $v } 'style' { $opt.style = $v }
     'alerts' { $opt.alerts = $v } 'sound' { if ($v -eq '0') { $opt.sound = 'off' } } 'volume' { $opt.sound = 'loud' }
-    'ticker' { $opt.ticker = $v }
+    'ticker' { $opt.ticker = $v } 'delay' { $opt.delay = $v }
   }
 }
 if (-not $opt.user) { Fail "The link is missing your Sleeper username. Copy the command again from the setup page." }
@@ -57,11 +56,11 @@ Say "Installing Fantasy TV on the TV..."
 & $Adb -s $target shell appops set app.fantasytv SYSTEM_ALERT_WINDOW allow
 
 Say "Starting Fantasy TV..."
-$extra = @('--es', 'user', $opt.user, '--es', 'style', $opt.style, '--es', 'alerts', $opt.alerts, '--es', 'sound', $opt.sound, '--es', 'ticker', $opt.ticker)
+$extra = @('--es', 'user', $opt.user, '--es', 'style', $opt.style, '--es', 'alerts', $opt.alerts, '--es', 'sound', $opt.sound, '--es', 'ticker', $opt.ticker, '--es', 'delay', $opt.delay)
 if ($opt.league) { $extra += @('--es', 'league', $opt.league) }
 & $Adb -s $target shell am start -n app.fantasytv/.MainActivity @extra --ez quiet true | Out-Null
 
 Say "All done. Fantasy TV is on your TV."
-Write-Host "It starts by itself whenever the TV does. To change pop-ups or sound, or turn it off,"
-Write-Host "open 'Fantasy TV' from the Apps row on the TV."
+Write-Host "From now on, open 'Fantasy TV' from the Apps row on the TV and choose On when you want it."
+Write-Host "It goes off when the TV restarts. The same menu changes pop-ups, sound, scoreboard and delay."
 Read-Host "Press Enter to close"

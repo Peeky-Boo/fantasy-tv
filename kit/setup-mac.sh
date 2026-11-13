@@ -1,8 +1,7 @@
 #!/bin/bash
 # Fantasy TV setup for a Mac.
 # Installs the Fantasy TV app on your Fire TV, lets it show over other apps, and starts it.
-# After this it runs by itself, even after the TV restarts. Change settings from the
-# Fantasy TV app on the TV (Apps row).
+# After this, turn it on (and change settings) from the Fantasy TV app on the TV (Apps row).
 # Usage: bash setup-mac.sh "<your Fantasy TV link>" [TV IP address]
 set -u
 APP_URL="${1:-}"
@@ -22,13 +21,13 @@ if [ -z "$TV_IP" ]; then
 fi
 
 # your choices from the setup page, passed to the app
-USER_ARG=""; LEAGUE=""; STYLE="broadcast"; ALERTS="league"; SOUND="quiet"; TICKER="1"
+USER_ARG=""; LEAGUE=""; STYLE="broadcast"; ALERTS="league"; SOUND="quiet"; TICKER="1"; DELAY="0"
 IFS='&' read -r -a PAIRS <<< "${APP_URL#*\?}"
 for kv in "${PAIRS[@]}"; do
   k="${kv%%=*}"; v="${kv#*=}"
   case "$k" in
     user) USER_ARG="$v" ;; league) LEAGUE="$v" ;; style) STYLE="$v" ;; alerts) ALERTS="$v" ;;
-    sound) [ "$v" = "0" ] && SOUND="off" ;; volume) SOUND="loud" ;; ticker) TICKER="$v" ;;
+    sound) [ "$v" = "0" ] && SOUND="off" ;; volume) SOUND="loud" ;; ticker) TICKER="$v" ;; delay) DELAY="$v" ;;
   esac
 done
 [ -z "$USER_ARG" ] && fail "The link is missing your Sleeper username. Copy the command again from the setup page."
@@ -63,11 +62,11 @@ say "Installing Fantasy TV on the TV..."
 "$ADB" -s "$TV_IP:5555" shell appops set app.fantasytv SYSTEM_ALERT_WINDOW allow
 
 say "Starting Fantasy TV..."
-EXTRA=(--es user "$USER_ARG" --es style "$STYLE" --es alerts "$ALERTS" --es sound "$SOUND" --es ticker "$TICKER")
+EXTRA=(--es user "$USER_ARG" --es style "$STYLE" --es alerts "$ALERTS" --es sound "$SOUND" --es ticker "$TICKER" --es delay "$DELAY")
 [ -n "$LEAGUE" ] && EXTRA+=(--es league "$LEAGUE")
 "$ADB" -s "$TV_IP:5555" shell am start -n app.fantasytv/.MainActivity "${EXTRA[@]}" --ez quiet true >/dev/null \
   || fail "Couldn't start the app."
 
 say "All done. Fantasy TV is on your TV."
-echo "It starts by itself whenever the TV does. To change pop-ups or sound, or turn it off,"
-echo "open 'Fantasy TV' from the Apps row on the TV."
+echo "From now on, open 'Fantasy TV' from the Apps row on the TV and choose On when you want it."
+echo "It goes off when the TV restarts. The same menu changes pop-ups, sound, scoreboard and delay."

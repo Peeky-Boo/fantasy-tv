@@ -7,7 +7,7 @@ big plays, field goals and lead changes, with a live league scoreboard in the co
 
 How it works:
 - The Fantasy TV app (`kit/FantasyTV.apk`) shows `tv.html` see-through over whatever is playing and
-  starts by itself with the TV. Open it from the Apps row to change pop-ups, sound and the scoreboard.
+  is off until you turn it on from the Apps row, where you also change pop-ups, sound, scoreboard and delay.
   The page reads Sleeper's public API every 30 seconds. No server, no account, no laptop on game day.
 - Points are Sleeper's own, so they follow your league's scoring rules. The change in each
   player's stat line says what happened ("34-yd TD catch", "Sack").
