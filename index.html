@@ -160,7 +160,7 @@
 
   <section id="s4" class="hidden">
     <h2><span class="n">4</span> On Sunday</h2>
-    <p>Fantasy TV stays on until the TV restarts. If it's gone, either double-click <b>Start Fantasy TV</b> on the computer you set up with, or make a one-tap phone shortcut:</p>
+    <p>Fantasy TV stays on until the TV restarts. To take it off (say, for a film), double-click <b>Stop Fantasy TV</b> on the computer you set up with; <b>Start Fantasy TV</b> brings it back. Or make a one-tap phone shortcut to start it:</p>
     <div class="tabs" id="phoneTabs">
       <button data-ph="iphone" class="on">iPhone</button>
       <button data-ph="android">Android</button>
@@ -285,7 +285,7 @@
     if (!$('ticker').checked) p.push('ticker=0');
     if (pick('alerts') !== 'league') p.push('alerts=' + pick('alerts'));
     if (pick('sound') === 'off') p.push('sound=0');
-    if (pick('sound') === 'loud') p.push('volume=0.85');
+    if (pick('sound') === 'loud') p.push('volume=0.35');
     if ($('big').checked) p.push('size=1.3');
     return base + 'tv.html?' + p.join('&');
   }

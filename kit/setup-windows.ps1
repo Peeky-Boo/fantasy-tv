@@ -61,6 +61,15 @@ Start-Sleep 3
 $startBat = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Start Fantasy TV.bat'
 "@powershell -NoProfile -ExecutionPolicy Bypass -File `"$startPs1`"" | Set-Content -Encoding ASCII $startBat
 
+$stopPs1 = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Stop Fantasy TV.ps1'
+@"
+# Takes Fantasy TV (and its corner scoreboard) off the TV. Start Fantasy TV brings it back.
+try { Invoke-RestMethod -Method Post -Uri 'http://$($TvIp):7979/cancel?id=fantasy-tv' -TimeoutSec 10 | Out-Null; Write-Host 'Fantasy TV is off.' }
+catch { Write-Host "The TV didn't answer. Is it on?" }
+Start-Sleep 3
+"@ | Set-Content -Encoding UTF8 $stopPs1
+"@powershell -NoProfile -ExecutionPolicy Bypass -File `"$stopPs1`"" | Set-Content -Encoding ASCII (Join-Path ([Environment]::GetFolderPath('Desktop')) 'Stop Fantasy TV.bat')
+
 Say "Starting Fantasy TV..."
 Start-Sleep 2
 & powershell -NoProfile -ExecutionPolicy Bypass -File $startPs1

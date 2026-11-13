@@ -49,7 +49,7 @@
   }
   var DURATION = parseInt(q.get('duration') || (SHOWCASE ? '5' : '8'), 10);
   var SOUND = flag('sound', true), TICKER = flag('ticker', true);
-  var VOLUME = Math.max(0, Math.min(1, parseFloat(q.get('volume') || '0.4')));  // quiet by default
+  var VOLUME = Math.max(0, Math.min(1, parseFloat(q.get('volume') || '0.12')));  // quiet by default
   if (VOLUME === 0) SOUND = false;
   if (flag('bg', false)) document.body.className = 'bg';
 

@@ -65,10 +65,17 @@ curl -s -m 10 -X POST -H 'Content-Type: application/json' \\
   "http://$TV_IP:7979/notify" && echo "Fantasy TV is on." || echo "The TV didn't answer. Is it on, and is PiPup installed?"
 sleep 3
 START
-chmod +x "$HOME/Desktop/Start Fantasy TV.command"
+cat > "$HOME/Desktop/Stop Fantasy TV.command" <<STOP
+#!/bin/bash
+# Takes Fantasy TV (and its corner scoreboard) off the TV. Start Fantasy TV brings it back.
+curl -s -m 10 -X POST "http://$TV_IP:7979/cancel?id=fantasy-tv" >/dev/null && echo "Fantasy TV is off." || echo "The TV didn't answer. Is it on?"
+sleep 3
+STOP
+chmod +x "$HOME/Desktop/Start Fantasy TV.command" "$HOME/Desktop/Stop Fantasy TV.command"
 
 say "Starting Fantasy TV..."
 sleep 2
 "$HOME/Desktop/Start Fantasy TV.command"
 say "All done. Fantasy TV should now be on your TV."
 echo "If the TV restarts, double-click 'Start Fantasy TV' on your Desktop (or use the phone shortcut)."
+echo "To take it off the TV (say, for a film), double-click 'Stop Fantasy TV'."
