@@ -36,6 +36,11 @@
   table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 6px; }
   th, td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--line); vertical-align: top; }
   th { color: var(--muted); font-weight: 600; }
+  .shots { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 14px 0 6px; }
+  .shots figure { margin: 0; }
+  .shots img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--line); }
+  .shots figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .shots figcaption b { color: var(--ink); }
   footer { color: var(--muted); font-size: 13px; text-align: center; margin-top: 30px; }
 </style>
 </head>
@@ -60,6 +65,13 @@
       <div class="card"><span class="tag">No computer</span><b>Lite</b><small>Install with Downloader on the Fire TV, nothing else. Alerts pop up for about 7 seconds; the scoreboard pops up when scores change.</small></div>
       <div class="card"><span class="tag">Best</span><b>Full</b><small>Adds a 10-minute step with a laptop (or an Android phone). Animated alerts and a live scoreboard always in the corner.</small></div>
     </div>
+    <div class="shots">
+      <figure><img src="img/lite.jpg" alt="Lite: a touchdown card in the top-right corner" width="1400" height="408" loading="lazy">
+        <figcaption><b>Lite</b>: the card pops up for about 7 seconds. No scoreboard in the corner; it pops up when scores change.</figcaption></figure>
+      <figure><img src="img/full.jpg" alt="Full: an animated touchdown card top right and a live league scoreboard top left" width="1400" height="408" loading="lazy">
+        <figcaption><b>Full</b>: animated card, plus the live league scoreboard in the corner all game.</figcaption></figure>
+    </div>
+    <p class="sub">Real screenshots of the same touchdown: the top of a 1080p TV screen, with sample teams. Your own TV picture shows behind.</p>
     <p class="sub" style="margin-top:10px">Start with Lite. You can upgrade to Full any time; the app switches over by itself.</p>
   </section>
 
