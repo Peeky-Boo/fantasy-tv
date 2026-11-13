@@ -51,6 +51,8 @@
     cfg.speed = parseFloat(q.get('speed') || '2.4'); cfg.board = 0; cfg.seed = parseInt(q.get('seed') || '12', 10);
   }
   var DURATION = parseInt(q.get('duration') || (SHOWCASE ? '5' : '8'), 10);
+  // lite mode: the Fantasy TV app runs this page unseen and shows each alert itself
+  var BRIDGE = window.FantasyBridge || null;
   var SOUND = flag('sound', true);
   // corner scoreboard: always (default), 'changes' = only when a score moves, 0 = off
   var TICKER_MODE = (q.get('ticker') || '1').toLowerCase();
@@ -109,8 +111,22 @@
   [card, big, ticker].forEach(function (f) { f.addEventListener('load', function () { f.dataset.ready = 1; }); });
 
   var lastKind = '';
+  function soundFor(a) {
+    var m = moment(a);
+    if (SHOWCASE && !m && a.kind !== 'matchups') m = { td: 'league', sack: 'def', big: 'big', fg: 'fg', turnover: 'turnover', lead: 'lead', lost: 'turnover' }[a.kind];
+    return SOUND && m ? m : '';
+  }
   function add(a) {
     a.duration = a.duration || DURATION;
+    if (BRIDGE) {
+      if (SHOWCASE && a.kind !== 'scores' && a.kind !== 'matchups') {
+        if (a.kind === lastKind && a.kind !== 'td') return;
+        lastKind = a.kind;
+      }
+      if (a.kind === 'matchups') a.duration = 7;
+      BRIDGE.alert(JSON.stringify(a), Math.min(a.duration, 8), soundFor(a), VOLUME, SHOWCASE ? 0 : DELAY);
+      return;
+    }
     if (SHOWCASE) {
       if (a.kind === 'matchups') a.duration = 5;
       else if (a.kind === 'scores') a.duration = 9;
@@ -142,9 +158,8 @@
     }
     post(f, { type: 'alert', alert: a });
     f.className = 'on';
-    var m = moment(a);
-    if (SHOWCASE && !m && a.kind !== 'matchups') m = { td: 'league', sack: 'def', big: 'big', fg: 'fg', turnover: 'turnover', lead: 'lead', lost: 'turnover' }[a.kind];
-    if (SOUND && m) playMoment(m);
+    var m = soundFor(a);
+    if (m) playMoment(m);
     setTimeout(function () { f.className = ''; setTimeout(next, 500); }, a.duration * 1000 + 300);
   }
 
@@ -165,6 +180,7 @@
     var changed = lastScores !== null && scores !== lastScores;
     var first = lastScores === null;
     lastScores = scores;
+    if (BRIDGE) { if (changed) BRIDGE.board(JSON.stringify(b), SHOWCASE ? 0 : DELAY); return; }
     if (!ON_CHANGE) { post(ticker, { type: 'board', board: b }); ticker.className = 'on'; return; }
     if (!changed && !first) { post(ticker, { type: 'board', board: b }); return; }
     // slide in first, then update, so the score changes animate where you can see them
@@ -175,7 +191,7 @@
     hideTimer = setTimeout(function () { ticker.className = ''; }, first ? 10000 : 12000);
   }
   // with a delay set, alerts and scores wait before appearing (the showcase never waits)
-  var later = function (fn) { return function (x) { if (DELAY && !SHOWCASE) setTimeout(function () { fn(x); }, DELAY); else fn(x); }; };
+  var later = function (fn) { return function (x) { if (DELAY && !SHOWCASE && !BRIDGE) setTimeout(function () { fn(x); }, DELAY); else fn(x); }; };
 
   if (flag('demo', false)) {
     FTA.demoAlerts().forEach(add);
