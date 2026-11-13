@@ -2,10 +2,10 @@ Sounds from Pixabay (https://pixabay.com/sound-effects/), used under the Pixabay
 Trimmed and levelled for TV.
 td.mp3        air horn (SoundReality) + stadium crowd (arunangshubanerjee)
 opp.mp3       crowd booing (DRAGON-STUDIO)
-def.mp3       crowd shocked reaction (Universfield)
+def.mp3       strong crowd cheering, short (GregorQuendel)
 turnover.mp3  crowd disappointment reaction (Universfield)
 fg.mp3        crowd cheer and applause (DRAGON-STUDIO)
-big.mp3       crowd shocked reaction (Universfield)
+big.mp3       crowd cheering and yelling (u_mojdif8pzp)
 lead.mp3      ding (DRAGON-STUDIO)
 league.mp3    notification bell (DRAGON-STUDIO)
 final.mp3     referee whistle (CharlesHeffley009)
