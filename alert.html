@@ -32,6 +32,7 @@
     animation: slideIn 0.65s cubic-bezier(.2, 1.4, .4, 1) both;
   }
   .card.out { animation: slideOut 0.55s ease-in forwards; }
+  .card, .board, .crown, .fly, .spark, .shine { will-change: transform; }
   @keyframes slideIn { from { transform: translateX(115%); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes slideOut { to { transform: translateX(115%); opacity: 0; } }
 
@@ -63,7 +64,7 @@
     background: linear-gradient(90deg, #fff, var(--gold), #fff);
     background-size: 200% 100%;
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    animation: gleam 1.6s linear infinite;
+    animation: gleam 1.6s linear 2;
   }
   @keyframes gleam { to { background-position: -200% 0; } }
   .who {
@@ -130,10 +131,10 @@
 
   /* ---------- scoreboard flair ---------- */
   .bhead { position: relative; overflow: hidden; }
-  .bhead:after { content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 35%;
+  .bhead:after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 35%; will-change: transform;
                  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.2), transparent);
-                 animation: sweep 7s ease-in-out infinite; }
-  @keyframes sweep { 0%, 75% { left: -40%; } 100% { left: 110%; } }
+                 transform: translateX(-120%); animation: sweep 12s ease-in-out infinite; }
+  @keyframes sweep { 0%, 85% { transform: translateX(-120%); } 100% { transform: translateX(320%); } }
   .row { position: relative; }
   .share { position: absolute; left: 3vw; right: 3vw; bottom: 0.6vw; height: 0.45vw; display: flex;
            border-radius: 1vw; overflow: hidden; opacity: 0.8; }
