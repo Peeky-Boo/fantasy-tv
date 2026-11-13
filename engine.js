@@ -73,8 +73,8 @@
     if (g('idp_safe') > 0 || g('safe') > 0) return ['sack', '🛡️', 'SAFETY', ''];
     if (g('fgm') > 0) return ['fg', '🎯', 'FIELD GOAL', g('fgm') === 1 && g('fgm_yds') > 0 ? Math.round(g('fgm_yds')) + '-yd field goal' : (g('fgm') > 1 ? g('fgm') + ' field goals' : '')];
     if (g('pass_2pt') > 0 || g('rush_2pt') > 0 || g('rec_2pt') > 0) return ['big', '✌️', '2-POINT CONVERSION', ''];
-    if (g('pass_int') > 0) return ['turnover', '😬', 'INTERCEPTION THROWN', ''];
-    if (g('fum_lost') > 0) return ['turnover', '😬', 'FUMBLE LOST', ''];
+    if (g('pass_int') > 0 && delta < 0) return ['turnover', '😬', 'INTERCEPTION THROWN', ''];
+    if (g('fum_lost') > 0 && delta < 0) return ['turnover', '😬', 'FUMBLE LOST', ''];
     if (g('fgmiss') > 0 && delta < 0) return ['turnover', '😬', 'MISSED FIELD GOAL', ''];
     if (Math.round(g('rush_att')) === 1 && g('rush_yd') >= 20) return ['big', '⚡', 'BIG PLAY', Math.round(g('rush_yd')) + '-yd run'];
     if (Math.round(g('rec')) === 1 && g('rec_yd') >= 20) return ['big', '⚡', 'BIG PLAY', Math.round(g('rec_yd')) + '-yd catch'];

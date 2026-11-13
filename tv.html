@@ -40,7 +40,13 @@
     simulate: q.get('simulate'), speed: parseFloat(q.get('speed') || '6'), steps: parseInt(q.get('steps') || '120', 10),
     week: q.get('week') ? parseInt(q.get('week'), 10) : null
   };
-  var DURATION = parseInt(q.get('duration') || '8', 10);
+  // showcase: last week's real scores squeezed into about a minute, one alert at a time
+  var SHOWCASE = flag('showcase', false);
+  if (SHOWCASE) {
+    cfg.simulate = cfg.simulate || 'last'; cfg.steps = parseInt(q.get('steps') || '22', 10);
+    cfg.speed = parseFloat(q.get('speed') || '2.4'); cfg.board = 0; cfg.seed = parseInt(q.get('seed') || '12', 10);
+  }
+  var DURATION = parseInt(q.get('duration') || (SHOWCASE ? '5' : '8'), 10);
   var SOUND = flag('sound', true), TICKER = flag('ticker', true);
   var VOLUME = Math.max(0, Math.min(1, parseFloat(q.get('volume') || '0.3')));  // quiet by default
   if (flag('bg', false)) document.body.className = 'bg';
@@ -102,8 +108,16 @@
   }
   [card, big, ticker].forEach(function (f) { f.addEventListener('load', function () { f.dataset.ready = 1; }); });
 
+  var lastKind = '';
   function add(a) {
     a.duration = a.duration || DURATION;
+    if (SHOWCASE) {
+      if (a.kind === 'matchups') a.duration = 5;
+      else if (a.kind === 'scores') a.duration = 9;
+      else if (busy || queue.length) return;                       // never fall behind: skip, don't queue
+      else if (a.kind === lastKind && a.kind !== 'td') return;      // keep the mix varied
+      lastKind = a.kind;
+    }
     var minor = a.kind !== 'td' && a.kind !== 'lead' && a.kind !== 'lost';
     if (a.kind !== 'scores' && a.kind !== 'matchups' &&
         ((queue.length >= 3 && !a.mine) || (queue.length >= 6 && minor))) return;  // TV falling behind
@@ -115,7 +129,7 @@
     if (!a) { busy = false; return; }
     busy = true;
     // show the latest score, not the one from when the play was queued
-    if (a.score && a.score.b && lastBoard) {
+    if (a.score && a.score.b && lastBoard && a.kind !== 'lead' && a.kind !== 'lost') {
       lastBoard.rows.forEach(function (r) {
         if (r.b && r.a.name === a.score.a.name && r.b.name === a.score.b.name) a.score = r;
       });
