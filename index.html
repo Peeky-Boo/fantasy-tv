@@ -155,38 +155,14 @@
       <button id="copyWin">Copy</button>
     </div>
     <div class="tv-note"><b>Watch the TV</b> while it runs: when it asks <i>Allow USB debugging?</i>, tick <i>Always allow</i> and choose <b>OK</b>.</div>
-    <p class="sub">It downloads Android's official tool from Google and PiPup (a free, open-source overlay app) from GitHub, installs PiPup on the TV, then starts Fantasy TV. It also leaves a <b>Start Fantasy TV</b> file on your desktop.</p>
+    <p class="sub">It downloads Android's official tool from Google and the small Fantasy TV app, installs it on the TV and starts it. You only do this once.</p>
   </section>
 
   <section id="s4" class="hidden">
     <h2><span class="n">4</span> On Sunday</h2>
-    <p>Fantasy TV stays on until the TV restarts. To take it off (say, for a film), double-click <b>Stop Fantasy TV</b> on the computer you set up with; <b>Start Fantasy TV</b> brings it back. Or make a one-tap phone shortcut to start it:</p>
-    <div class="tabs" id="phoneTabs">
-      <button data-ph="iphone" class="on">iPhone</button>
-      <button data-ph="android">Android</button>
-    </div>
-    <div id="iphone">
-      <ol>
-        <li>Open the <b>Shortcuts</b> app, tap <b>+</b>, name it <i>Fantasy TV</i>.</li>
-        <li>Add a <b>Text</b> action and paste this into it:</li>
-      </ol>
-      <pre id="jsonA"></pre>
-      <ol start="3">
-        <li>Add <b>Get Contents of URL</b>. URL: <code id="notifyA"></code></li>
-        <li>Tap the arrow on that action: Method <b>POST</b>, Request Body <b>File</b>, choose the <b>Text</b> from step 2. Add a header <code>Content-Type</code> = <code>application/json</code>.</li>
-        <li>Add it to your Home Screen. One tap on Sunday puts Fantasy TV on the TV.</li>
-      </ol>
-    </div>
-    <div id="android" class="hidden">
-      <ol>
-        <li>Install <b>HTTP Shortcuts</b> from the Play Store.</li>
-        <li>New shortcut: method <b>POST</b>, URL <code id="notifyB"></code></li>
-        <li>Request body: custom text, type <code>application/json</code>, paste:</li>
-      </ol>
-      <pre id="jsonB"></pre>
-      <ol start="4"><li>Add it to your home screen.</li></ol>
-    </div>
-    <p class="sub">Your personal link (handy to bookmark): <a id="myLink" target="_blank" rel="noopener"></a></p>
+    <p>Nothing to do. Fantasy TV starts by itself whenever the TV does.</p>
+    <p>To change the pop-ups, the sound or the corner scoreboard, or to turn it off for a film, open <b>Fantasy TV</b> from the Apps row with your remote. Changes apply straight away; press Back to return to what you were watching.</p>
+    <p class="sub">Your personal link (handy for a quick look in a browser): <a id="myLink" target="_blank" rel="noopener"></a></p>
   </section>
 
   <footer>Fantasy TV is a fan project, not made by or connected to Sleeper or the NFL. Scores from Sleeper's public API.</footer>
@@ -276,9 +252,7 @@
     });
   }
   tabs('osTabs', 'os', ['mac', 'win']);
-  tabs('phoneTabs', 'ph', ['iphone', 'android']);
   if (/Win/.test(navigator.platform)) document.querySelector('[data-os=win]').click();
-  if (/Android/.test(navigator.userAgent)) document.querySelector('[data-ph=android]').click();
 
   function appUrl() {
     var p = ['user=' + encodeURIComponent(state.user), 'league=' + state.league, 'style=' + state.style];
@@ -298,10 +272,7 @@
     $('myLink').href = url; $('myLink').textContent = url;
     $('macCmd').textContent = 'curl -fsSL ' + base + 'kit/setup-mac.sh | bash -s -- "' + url + '" ' + (ip === 'YOUR-TV-IP' ? '' : ip);
     $('winCmd').textContent = "$AppUrl='" + url + "'; $TvIp='" + (ip === 'YOUR-TV-IP' ? '' : ip) + "'; irm " + base + 'kit/setup-windows.ps1 | iex';
-    var json = JSON.stringify({ id: 'fantasy-tv', duration: 0, position: 4, padding: 0, borderWidth: 0, fullscreen: true,
-      backgroundColor: '#00000000', media: { web: { uri: url, width: 1920, height: 1080, transparent: true, muted: pick('sound') === 'off' } } });
-    $('jsonA').textContent = $('jsonB').textContent = json;
-    $('notifyA').textContent = $('notifyB').textContent = 'http://' + ip + ':7979/notify';
+
   }
   function copy(id) { var t = $(id).textContent; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).catch(function () {}); }
   $('copyMac').onclick = function () { copy('macCmd'); this.textContent = 'Copied'; };
