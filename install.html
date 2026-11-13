@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install Guide</title>
+<meta name="description" content="How to put Fantasy TV on your Fire TV Stick.">
+<style>
+  :root { --bg: #0b0d12; --panel: #141821; --line: #252c3a; --ink: #eef1f6; --muted: #98a2b3; --gold: #FFC107; --blue: #29B6F6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+  a { color: var(--blue); }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 16px 60px; }
+  .hero { padding: 36px 0 8px; }
+  .hero h1 { font-size: clamp(28px, 6vw, 40px); line-height: 1.1; margin: 0 0 10px; letter-spacing: -0.02em; }
+  .hero h1 span { color: var(--gold); }
+  .hero p { color: var(--muted); margin: 0; font-size: 17px; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 4px; }
+  nav a { padding: 7px 12px; border: 1px solid var(--line); border-radius: 99px; text-decoration: none; color: var(--ink); font-size: 14px; background: var(--panel); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 18px 0; }
+  h2 { margin: 0 0 6px; font-size: 21px; display: flex; gap: 10px; align-items: center; }
+  h3 { margin: 18px 0 6px; font-size: 17px; }
+  .n { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #111; display: grid; place-items: center; font-size: 15px; font-weight: 800; }
+  .sub { color: var(--muted); margin: 0 0 10px; }
+  ol, ul { padding-left: 22px; margin: 8px 0; }
+  li { margin: 7px 0; }
+  code, .addr { background: #0a0d13; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: 14px; color: #cfe3ff; word-break: break-all; }
+  .addr { display: inline-block; padding: 8px 12px; font-size: 17px; font-weight: 700; color: var(--gold); margin: 4px 0; }
+  .choose { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: #0e1219; }
+  .card b { display: block; font-size: 16px; margin-bottom: 4px; }
+  .card small { color: var(--muted); display: block; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: rgba(255,193,7,0.15); color: var(--gold); margin-bottom: 6px; }
+  .note { border-left: 4px solid var(--gold); background: rgba(255,193,7,0.08); padding: 10px 12px; border-radius: 6px; margin: 12px 0; }
+  .tv { border-left-color: var(--blue); background: rgba(41,182,246,0.08); }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 6px; }
+  th, td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  footer { color: var(--muted); font-size: 13px; text-align: center; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>Put <span>Fantasy TV</span> on your Fire Stick</h1>
+    <p>Sleeper alerts over RedZone (or anything you're watching): touchdowns, sacks, big plays and a live scoreboard in the corner. About 10 minutes, once.</p>
+    <nav>
+      <a href="#tv">1. Get the TV ready</a>
+      <a href="#install">2. Install</a>
+      <a href="#permission">3. Permission</a>
+      <a href="#use">4. Using it</a>
+      <a href="#help">Help</a>
+    </nav>
+  </div>
+
+  <section id="tv">
+    <h2><span class="n">1</span> Get the TV ready</h2>
+    <p class="sub">With the Fire TV remote. Everyone does this part.</p>
+    <ol>
+      <li><b>Settings &gt; My Fire TV &gt; About</b>: highlight your device name (the first line) and press the select button <b>7 times</b>, until it says you're a developer.</li>
+      <li>Back to <b>My Fire TV &gt; Developer options</b>: turn <b>ADB debugging</b> on.</li>
+      <li><b>My Fire TV &gt; About &gt; Network</b>: write down the <b>IP address</b> (it looks like <code>192.168.1.50</code>).</li>
+    </ol>
+  </section>
+
+  <section id="install">
+    <h2><span class="n">2</span> Install Fantasy TV</h2>
+    <p class="sub">Pick whichever suits you.</p>
+    <div class="choose">
+      <div class="card"><span class="tag">Easiest</span><b>A. With a laptop</b><small>Mac or Windows on the same Wi-Fi. Installs the app and does step 3 for you.</small></div>
+      <div class="card"><span class="tag">No laptop</span><b>B. With Downloader on the TV</b><small>Installs the app from the TV itself. Step 3 then needs a laptop or an Android phone.</small></div>
+    </div>
+
+    <h3>A. With a laptop</h3>
+    <ol>
+      <li>On the laptop, open <a href="./">the setup page</a>, type your Sleeper username and pick your options.</li>
+      <li>Type your TV's IP, copy the one line it gives you, and paste it into <b>Terminal</b> (Mac) or <b>PowerShell</b> (Windows).</li>
+      <li>Watch the TV: when it asks <i>Allow USB debugging?</i>, tick <b>Always allow</b> and press <b>OK</b>.</li>
+    </ol>
+    <p>That's it: skip to <a href="#use">step 4</a>.</p>
+
+    <h3>B. With Downloader on the TV</h3>
+    <ol>
+      <li>On the Fire TV home screen, search for <b>Downloader</b> (the orange app by AFTVnews) and install it. It's free.</li>
+      <li><b>Settings &gt; My Fire TV &gt; Developer options &gt; Install unknown apps</b>: turn it on for <b>Downloader</b>.</li>
+      <li>Open Downloader, select the address box and type:<br><span class="addr">peeky-boo.github.io/fantasy-tv/ftv.apk</span></li>
+      <li>Press <b>Go</b>. When it's downloaded, choose <b>Install</b>, then <b>Done</b> (you can let Downloader delete the file afterwards).</li>
+      <li>Now do <a href="#permission">step 3</a>.</li>
+    </ol>
+  </section>
+
+  <section id="permission">
+    <h2><span class="n">3</span> Give it permission to show over other apps</h2>
+    <p class="sub">Only if you installed with Downloader (route B). Fire TV only allows this one setting from another device on your Wi-Fi, never from the TV itself, so pick one:</p>
+
+    <h3>With an Android phone</h3>
+    <ol>
+      <li>Install <b>Remote ADB Shell</b> from the Play Store (free).</li>
+      <li>Open it, enter your TV's IP address, port <code>5555</code>, and connect.</li>
+      <li>On the TV: <i>Allow USB debugging?</i> tick <b>Always allow</b>, press <b>OK</b>.</li>
+      <li>In the phone app, type this and press Enter:<br><code>appops set app.fantasytv SYSTEM_ALERT_WINDOW allow</code></li>
+    </ol>
+    <p class="sub">iPhones can't run this kind of app. If you only have an iPhone, borrow any laptop for 5 minutes (below), or ask a mate with an Android phone.</p>
+
+    <h3>With a laptop</h3>
+    <p>Easiest is route A above: it covers this step too. Or, if you already have Android's <code>adb</code> tool, run these two lines (with your TV's IP):</p>
+    <p><code>adb connect 192.168.1.50</code><br><code>adb shell appops set app.fantasytv SYSTEM_ALERT_WINDOW allow</code></p>
+
+    <h3>Then, on the TV</h3>
+    <p>Open <b>Fantasy TV</b> from your apps, choose <b>Add your Sleeper username</b>, type it with the on-screen keyboard and press <b>Save</b>.</p>
+  </section>
+
+  <section id="use">
+    <h2><span class="n">4</span> Using it</h2>
+    <div class="note tv"><b>To turn it on:</b> open <b>Fantasy TV</b> from your Apps row, press <b>OK</b> on <b>On</b>, then <b>Back</b> to go back to the game. It's off until you turn it on, and goes off again whenever the TV restarts.</div>
+    <p>The same menu, opened with the remote at any time, changes:</p>
+    <table>
+      <tr><th>Setting</th><th>Choices</th></tr>
+      <tr><td>Pop-ups</td><td>Just my matchup / My matchup + league TDs / Everything</td></tr>
+      <tr><td>Sound</td><td>Off / Quiet / Louder</td></tr>
+      <tr><td>Scoreboard in the corner</td><td>Always / When scores change / Off</td></tr>
+      <tr><td>Delay alerts</td><td>None, 15, 30 or 60 seconds: if an alert spoils a play before your stream shows it, add a delay</td></tr>
+      <tr><td>Look</td><td>Broadcast / Stadium / Lower third</td></tr>
+    </table>
+    <p class="sub">Tip: <b>Play the 1-minute demo</b> in the menu shows last week's real scores from your league as if live, to see it working any time.</p>
+
+    <h3>Updating</h3>
+    <p>Install a new version the same way you installed it (route A's line again, or Downloader with the same address). Your settings and the permission are kept.</p>
+  </section>
+
+  <section id="help">
+    <h2>Help</h2>
+    <table>
+      <tr><th>Problem</th><th>Fix</th></tr>
+      <tr><td>The app says "One-off setup needed"</td><td>Step 3 hasn't been done yet.</td></tr>
+      <tr><td>The laptop or phone can't connect</td><td>Check ADB debugging is on, the TV's IP is right, and both are on the same Wi-Fi (not a guest network).</td></tr>
+      <tr><td>No "Allow USB debugging?" on the TV</td><td>Turn ADB debugging off and on again, then reconnect.</td></tr>
+      <tr><td>Nothing shows on the TV</td><td>Open Fantasy TV and check it says <b>On</b>.</td></tr>
+      <tr><td>Alerts appear before the play</td><td>Set <b>Delay alerts</b> to 30 or 60 seconds.</td></tr>
+      <tr><td>Too loud, or the picture stutters when a sound plays</td><td>Sound: <b>Quiet</b> or <b>Off</b>.</td></tr>
+      <tr><td>Wrong league</td><td>If you're in several, set it up again from <a href="./">the setup page</a> and pick the league there.</td></tr>
+    </table>
+  </section>
+
+  <footer>Fantasy TV is a fan project, not made by or connected to Sleeper, Amazon or the NFL. <a href="./">Setup page</a></footer>
+</div>
+</body>
+</html>
