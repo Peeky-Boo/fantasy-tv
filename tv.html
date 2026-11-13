@@ -49,7 +49,7 @@
   }
   var DURATION = parseInt(q.get('duration') || (SHOWCASE ? '5' : '8'), 10);
   var SOUND = flag('sound', true), TICKER = flag('ticker', true);
-  var VOLUME = Math.max(0, Math.min(1, parseFloat(q.get('volume') || '0.3')));  // quiet by default
+  var VOLUME = Math.max(0, Math.min(1, parseFloat(q.get('volume') || '0.4')));  // quiet by default
   if (VOLUME === 0) SOUND = false;
   if (flag('bg', false)) document.body.className = 'bg';
 
@@ -73,42 +73,23 @@
   place(card, S[0], S[1], pos);
 
   // ---------------------------------------------------------------- sounds
-  var ctx = null;
-  function tone(notes, lead) {
-    (window.ftaSoundLog = window.ftaSoundLog || []).push(performance.now());  // used to add sound to recordings
-    try {
-      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
-      if (ctx.state === 'suspended') ctx.resume();
-      var t = ctx.currentTime + (lead || 0.3);
-      notes.forEach(function (n) {
-        if (n[0]) {
-          [1, 2, 3].forEach(function (h, i) {
-            var o = ctx.createOscillator(), g = ctx.createGain();
-            o.frequency.value = n[0] * h; o.type = 'sine';
-            g.gain.setValueAtTime(0, t);
-            var lvl = [0.22, 0.1, 0.04][i] * VOLUME;
-            g.gain.linearRampToValueAtTime(lvl, t + 0.01);
-            g.gain.setValueAtTime(lvl, t + n[1] - 0.06);
-            g.gain.linearRampToValueAtTime(0, t + n[1]);
-            o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + n[1] + 0.02);
-          });
-        }
-        t += n[1];
-      });
-    } catch (e) { /* no audio on this device */ }
+  // Real stadium recordings, one file per moment in sounds/ (swap a file to change a sound)
+  var MOMENTS = ['td', 'opp', 'def', 'turnover', 'fg', 'big', 'lead', 'league', 'final'];
+  var clips = {};
+  if (SOUND) MOMENTS.forEach(function (m) { var c = new Audio('sounds/' + m + '.mp3'); c.preload = 'auto'; clips[m] = c; });
+  function moment(a) {
+    if (a.kind === 'scores') return a.final ? 'final' : null;
+    if (a.kind === 'matchups') return null;
+    if (a.kind === 'lead' || a.kind === 'lost') return a.mine ? 'lead' : null;
+    if (a.kind === 'td') return a.mineRow ? 'td' : a.mine ? 'opp' : (a.who ? 'league' : null);
+    if (!a.mineRow) return a.mine && a.kind === 'turnover' ? 'def' : null;   // your opponent coughs it up: good for you
+    return { sack: 'def', turnover: 'turnover', fg: 'fg', big: 'big' }[a.kind] || null;
   }
-  var SOUNDS = {
-    td: [[523, 0.12], [659, 0.12], [784, 0.12], [0, 0.04], [1047, 0.45]],
-    boo: [[392, 0.28], [370, 0.28], [349, 0.28], [330, 0.7]],
-    lead: [[880, 0.1], [1175, 0.3]],
-    hit: [[98, 0.09], [0, 0.03], [82, 0.18]],
-    swish: [[660, 0.06], [880, 0.06], [1175, 0.14]],
-    chime: [[784, 0.1], [1047, 0.28]],
-    whistle: [[1760, 0.16], [0, 0.07], [1760, 0.5]]
-  };
-  // showcase only: every alert gets a sound, so a recording isn't mostly silent
-  var SHOWCASE_SOUNDS = { td: 'chime', sack: 'hit', big: 'swish', fg: 'chime', turnover: 'boo',
-                          lead: 'lead', lost: 'boo', scores: 'whistle', matchups: 'swish' };
+  function playMoment(m) {
+    var c = clips[m]; if (!c) return;
+    (window.ftaSoundLog = window.ftaSoundLog || []).push([performance.now(), m]);   // used to add sound to recordings
+    try { var s = c.cloneNode(); s.volume = VOLUME; var p = s.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+  }
 
   // ---------------------------------------------------------------- the queue
   var queue = [], busy = false;
@@ -152,8 +133,9 @@
     }
     post(f, { type: 'alert', alert: a });
     f.className = 'on';
-    var snd = a.sound || (SHOWCASE ? SHOWCASE_SOUNDS[a.kind] : null);
-    if (SOUND && snd && SOUNDS[snd]) { tone(SOUNDS[snd]); window.ftaSoundLog[window.ftaSoundLog.length - 1] = [performance.now(), snd]; }
+    var m = moment(a);
+    if (SHOWCASE && !m && a.kind !== 'matchups') m = { td: 'league', sack: 'def', big: 'big', fg: 'fg', turnover: 'turnover', lead: 'lead', lost: 'turnover' }[a.kind];
+    if (SOUND && m) playMoment(m);
     setTimeout(function () { f.className = ''; setTimeout(next, 500); }, a.duration * 1000 + 300);
   }
 

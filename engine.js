@@ -352,7 +352,7 @@
 
   Engine.prototype.scoreboard = function (rows, final) {
     var b = this.board(rows);
-    this.hooks.alert({ kind: 'scores', emoji: '📊', colour: GOLD, label: b.league + '  WEEK ' + b.week + (final ? '  FINAL' : ''),
+    this.hooks.alert({ kind: 'scores', final: !!final, emoji: '📊', colour: GOLD, label: b.league + '  WEEK ' + b.week + (final ? '  FINAL' : ''),
       lines: b.rows, duration: Math.max(10, 2 * b.rows.length), mine: true });
   };
 
@@ -396,7 +396,7 @@
             who: self.names[row.roster_id], colour: self.colours[row.roster_id], good: !bad,
             player: pl.name, pos: pl.pos, nfl: pl.team, nflColour: NFL_COLOURS[pl.team] || '',
             photo: pl.pos && pl.pos !== 'DEF' ? PHOTO + pid + '.jpg' : '',
-            delta: delta, score: self.score(a, b), sound: sound, mine: isMine,
+            delta: delta, score: self.score(a, b), sound: sound, mine: isMine, mineRow: mineRow,
             title: hit[2] + ': ' + self.names[row.roster_id]
           });
         });

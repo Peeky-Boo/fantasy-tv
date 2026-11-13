@@ -111,7 +111,7 @@
         <label><input type="radio" name="sound" value="quiet" checked> <span>Quiet <small>A nudge, not a klaxon</small></span></label>
         <label><input type="radio" name="sound" value="loud"> <span>Louder</span></label>
       </div>
-      <p class="sub" style="margin-top:8px">Fanfare when you score, sad trombone when your opponent does, a ding when the lead changes. Turn it off if the picture stutters when one plays.</p>
+      <p class="sub" style="margin-top:8px">Real stadium sounds: an air horn and the crowd when you score, booing when your opponent does, an "ooooh" for your defence, a groan when you turn it over, a ding when the lead changes. Turn it off if the picture stutters when one plays.</p>
     </div>
     <div class="checks">
       <label><input type="checkbox" id="ticker" checked> <span>Live scoreboard in the top-left corner all game</span></label>
@@ -285,7 +285,7 @@
     if (!$('ticker').checked) p.push('ticker=0');
     if (pick('alerts') !== 'league') p.push('alerts=' + pick('alerts'));
     if (pick('sound') === 'off') p.push('sound=0');
-    if (pick('sound') === 'loud') p.push('volume=0.7');
+    if (pick('sound') === 'loud') p.push('volume=0.85');
     if ($('big').checked) p.push('size=1.3');
     return base + 'tv.html?' + p.join('&');
   }

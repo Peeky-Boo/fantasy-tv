@@ -14,3 +14,4 @@ How it works:
 - `kit/` holds the one-off setup scripts for Mac and Windows that install PiPup on the TV.
 
 A fan project, not made by or connected to Sleeper or the NFL. Player photos are loaded from Sleeper.
+Sounds are real stadium recordings from Pixabay (Pixabay Content License), credited in `sounds/CREDITS.txt`.
