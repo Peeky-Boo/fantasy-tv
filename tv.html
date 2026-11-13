@@ -73,6 +73,7 @@
   // ---------------------------------------------------------------- sounds
   var ctx = null;
   function tone(notes, lead) {
+    (window.ftaSoundLog = window.ftaSoundLog || []).push(performance.now());  // used to add sound to recordings
     try {
       ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
       if (ctx.state === 'suspended') ctx.resume();
@@ -97,8 +98,15 @@
   var SOUNDS = {
     td: [[523, 0.12], [659, 0.12], [784, 0.12], [0, 0.04], [1047, 0.45]],
     boo: [[392, 0.28], [370, 0.28], [349, 0.28], [330, 0.7]],
-    lead: [[880, 0.1], [1175, 0.3]]
+    lead: [[880, 0.1], [1175, 0.3]],
+    hit: [[98, 0.09], [0, 0.03], [82, 0.18]],
+    swish: [[660, 0.06], [880, 0.06], [1175, 0.14]],
+    chime: [[784, 0.1], [1047, 0.28]],
+    whistle: [[1760, 0.16], [0, 0.07], [1760, 0.5]]
   };
+  // showcase only: every alert gets a sound, so a recording isn't mostly silent
+  var SHOWCASE_SOUNDS = { td: 'chime', sack: 'hit', big: 'swish', fg: 'chime', turnover: 'boo',
+                          lead: 'lead', lost: 'boo', scores: 'whistle', matchups: 'swish' };
 
   // ---------------------------------------------------------------- the queue
   var queue = [], busy = false;
@@ -142,7 +150,8 @@
     }
     post(f, { type: 'alert', alert: a });
     f.className = 'on';
-    if (SOUND && a.sound && SOUNDS[a.sound]) tone(SOUNDS[a.sound]);
+    var snd = a.sound || (SHOWCASE ? SHOWCASE_SOUNDS[a.kind] : null);
+    if (SOUND && snd && SOUNDS[snd]) { tone(SOUNDS[snd]); window.ftaSoundLog[window.ftaSoundLog.length - 1] = [performance.now(), snd]; }
     setTimeout(function () { f.className = ''; setTimeout(next, 500); }, a.duration * 1000 + 300);
   }
 
