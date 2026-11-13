@@ -49,6 +49,15 @@
   .checks { display: grid; gap: 8px; margin-top: 14px; }
   .checks label { display: flex; gap: 10px; align-items: flex-start; margin: 0; color: var(--ink); font-size: 15px; }
   .checks small { color: var(--muted); }
+  .choice { margin-top: 18px; }
+  .choice > b { display: block; margin-bottom: 8px; }
+  .opts { display: grid; gap: 8px; }
+  .opts label { display: flex; gap: 10px; align-items: flex-start; margin: 0; padding: 10px 12px; border: 1px solid var(--line);
+                border-radius: 10px; background: #0e1219; color: var(--ink); font-size: 15px; cursor: pointer; }
+  .opts label:has(input:checked) { border-color: var(--gold); background: rgba(255,193,7,0.08); }
+  .opts input { margin-top: 3px; accent-color: #FFC107; }
+  .opts small { color: var(--muted); display: block; }
+  .opts.row3 { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
   .tabs { display: flex; gap: 6px; margin: 14px 0 10px; flex-wrap: wrap; }
   .tabs button { padding: 8px 14px; }
   .tabs button.on { background: var(--gold); color: #111; border-color: var(--gold); }
@@ -87,10 +96,25 @@
   <section id="s2" class="hidden">
     <h2><span class="n">2</span> Pick the look</h2>
     <div class="styles" id="styles"></div>
+    <div class="choice">
+      <b>Pop-ups in the top right</b>
+      <div class="opts" id="alertsOpts">
+        <label><input type="radio" name="alerts" value="mine"> <span>Just my matchup <small>Only your game pops up. The scoreboard still shows the whole league.</small></span></label>
+        <label><input type="radio" name="alerts" value="league" checked> <span>My matchup + league touchdowns <small>Everything for your game; touchdowns and lead changes in the others.</small></span></label>
+        <label><input type="radio" name="alerts" value="all"> <span>Everything in the league <small>Every touchdown, sack, big play and field goal in every matchup. Busy!</small></span></label>
+      </div>
+    </div>
+    <div class="choice">
+      <b>Sound</b>
+      <div class="opts row3" id="soundOpts">
+        <label><input type="radio" name="sound" value="off"> <span>Off</span></label>
+        <label><input type="radio" name="sound" value="quiet" checked> <span>Quiet <small>A nudge, not a klaxon</small></span></label>
+        <label><input type="radio" name="sound" value="loud"> <span>Louder</span></label>
+      </div>
+      <p class="sub" style="margin-top:8px">Fanfare when you score, sad trombone when your opponent does, a ding when the lead changes. Turn it off if the picture stutters when one plays.</p>
+    </div>
     <div class="checks">
       <label><input type="checkbox" id="ticker" checked> <span>Live scoreboard in the top-left corner all game</span></label>
-      <label><input type="checkbox" id="everything"> <span>Every alert for every matchup <small>(otherwise: everything for yours, touchdowns and lead changes for the rest)</small></span></label>
-      <label><input type="checkbox" id="sound" checked> <span>Sounds: fanfare on your TDs, sad trombone on your opponent's <small>(turn off if the picture stutters when one plays)</small></span></label>
       <label><input type="checkbox" id="big"> <span>Bigger pop-ups <small>(for a small TV or a big room)</small></span></label>
     </div>
     <div class="row">
@@ -187,7 +211,12 @@
   if (saved.user) $('user').value = saved.user;
   if (saved.tvip) $('tvip').value = saved.tvip;
   if (saved.style) state.style = saved.style;
-  function save() { try { localStorage.setItem('fta', JSON.stringify({ user: state.user, tvip: $('tvip').value.trim(), style: state.style })); } catch (e) {} }
+  function save() {
+    try {
+      var g = function (n) { return (document.querySelector('input[name=' + n + ']:checked') || {}).value; };
+      localStorage.setItem('fta', JSON.stringify({ user: state.user, tvip: $('tvip').value.trim(), style: state.style, alerts: g('alerts'), sound: g('sound') }));
+    } catch (e) {}
+  }
 
   function getJSON(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
 
@@ -231,7 +260,11 @@
     requestAnimationFrame(fit); window.addEventListener('resize', fit);
     el.onclick = function () { state.style = s; save(); update(); };
   });
-  ['ticker', 'everything', 'sound', 'big'].forEach(function (id) { $(id).onchange = update; });
+  ['ticker', 'big'].forEach(function (id) { $(id).onchange = update; });
+  document.querySelectorAll('input[name=alerts], input[name=sound]').forEach(function (r) { r.onchange = function () { save(); update(); }; });
+  var pick = function (name) { return (document.querySelector('input[name=' + name + ']:checked') || {}).value; };
+  if (saved.alerts) (document.querySelector('input[name=alerts][value=' + saved.alerts + ']') || {}).checked = true;
+  if (saved.sound) (document.querySelector('input[name=sound][value=' + saved.sound + ']') || {}).checked = true;
   $('tvip').oninput = function () { save(); update(); };
 
   function tabs(group, attr, panes) {
@@ -250,8 +283,9 @@
   function appUrl() {
     var p = ['user=' + encodeURIComponent(state.user), 'league=' + state.league, 'style=' + state.style];
     if (!$('ticker').checked) p.push('ticker=0');
-    if ($('everything').checked) p.push('everything=1');
-    if (!$('sound').checked) p.push('sound=0');
+    if (pick('alerts') !== 'league') p.push('alerts=' + pick('alerts'));
+    if (pick('sound') === 'off') p.push('sound=0');
+    if (pick('sound') === 'loud') p.push('volume=0.7');
     if ($('big').checked) p.push('size=1.3');
     return base + 'tv.html?' + p.join('&');
   }
@@ -265,7 +299,7 @@
     $('macCmd').textContent = 'curl -fsSL ' + base + 'kit/setup-mac.sh | bash -s -- "' + url + '" ' + (ip === 'YOUR-TV-IP' ? '' : ip);
     $('winCmd').textContent = "$AppUrl='" + url + "'; $TvIp='" + (ip === 'YOUR-TV-IP' ? '' : ip) + "'; irm " + base + 'kit/setup-windows.ps1 | iex';
     var json = JSON.stringify({ id: 'fantasy-tv', duration: 0, position: 4, padding: 0, borderWidth: 0, fullscreen: true,
-      backgroundColor: '#00000000', media: { web: { uri: url, width: 1920, height: 1080, transparent: true, muted: !$('sound').checked } } });
+      backgroundColor: '#00000000', media: { web: { uri: url, width: 1920, height: 1080, transparent: true, muted: pick('sound') === 'off' } } });
     $('jsonA').textContent = $('jsonB').textContent = json;
     $('notifyA').textContent = $('notifyB').textContent = 'http://' + ip + ':7979/notify';
   }

@@ -34,6 +34,7 @@
   var cfg = {
     user: q.get('user') || '', league: q.get('league') || '',
     everything: flag('everything', false), tdsOnly: flag('tdsonly', false), sacks: flag('sacks', true),
+    alerts: q.get('alerts') || '',
     leadChanges: flag('leads', true), teamNames: flag('teamnames', false),
     interval: parseInt(q.get('interval') || '30', 10), board: parseInt(q.get('board') || '10', 10),
     bigPlay: parseFloat(q.get('bigplay') || '3'),
@@ -49,6 +50,7 @@
   var DURATION = parseInt(q.get('duration') || (SHOWCASE ? '5' : '8'), 10);
   var SOUND = flag('sound', true), TICKER = flag('ticker', true);
   var VOLUME = Math.max(0, Math.min(1, parseFloat(q.get('volume') || '0.3')));  // quiet by default
+  if (VOLUME === 0) SOUND = false;
   if (flag('bg', false)) document.body.className = 'bg';
 
   // window sizes in 1080p TV pixels, turned into a share of the screen width

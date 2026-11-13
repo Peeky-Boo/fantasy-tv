@@ -362,7 +362,10 @@
     this.pairs(rows).forEach(function (pair) {
       var a = pair[0], b = pair[1];
       var isMine = !!(self.mine[a.roster_id] || (b && self.mine[b.roster_id]));
-      var tdsOnly = cfg.tdsOnly || (!isMine && !cfg.everything);
+      // alerts: 'mine' = your matchup only, 'league' = yours in full plus TDs and lead changes elsewhere, 'all' = everything
+      var scope = cfg.alerts || (cfg.everything ? 'all' : 'league');
+      var quiet = !isMine && scope === 'mine';
+      var tdsOnly = cfg.tdsOnly || (!isMine && scope === 'league');
       [[a, b], [b, a]].forEach(function (sides) {
         var row = sides[0], other = sides[1];
         if (!row) return;
@@ -372,7 +375,7 @@
           var key = row.roster_id + ':' + pid, now = Number(pp[pid] || 0), before = self.prevPts[key];
           var st = stats[pid] || {};
           self.prevPts[key] = now;
-          if (!self.primed || before === undefined) { self.snaps[key] = st; return; }
+          if (!self.primed || before === undefined || quiet) { self.snaps[key] = st; return; }
           var delta = r2(now - before);
           if (Math.abs(delta) < 0.05) return;
           var d = diff(st, self.snaps[key]);
@@ -403,7 +406,7 @@
         var m = a.matchup_id, pa = a.points || 0, pb = b.points || 0;
         var leader = pa > pb ? a.roster_id : pb > pa ? b.roster_id : self.prevLeader[m];
         var was = self.prevLeader[m];
-        if (self.primed && cfg.leadChanges !== false && was && leader !== was) {
+        if (self.primed && cfg.leadChanges !== false && !quiet && was && leader !== was) {
           var lead = leader === a.roster_id ? a : b, trail = lead === a ? b : a;
           var lostMine = self.mine[trail.roster_id];
           self.hooks.alert({
