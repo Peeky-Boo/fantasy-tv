@@ -429,7 +429,7 @@
       return { a: { name: a, pts: ap, colour: '#29B6F6', mine: true }, b: { name: b, pts: bp, colour: '#EC407A' } };
     };
     return [
-      { kind: 'td', emoji: '🏈', label: 'TOUCHDOWN', detail: '34-yd TD catch', who: 'You', colour: '#29B6F6', good: true,
+      { kind: 'td', emoji: '🏈', label: 'TOUCHDOWN', detail: '34-yd TD catch', who: 'You', colour: '#29B6F6', good: true, mineRow: true,
         player: "Ja'Marr Chase", pos: 'WR', nfl: 'CIN', nflColour: NFL_COLOURS.CIN, photo: PHOTO + '7564.jpg',
         delta: 9.9, score: sc('You', 74.2, 'Your opponent', 61.0), sound: 'td', mine: true },
       { kind: 'sack', emoji: '💥', label: 'SACK', detail: '8-yd loss', who: 'Your opponent', colour: '#EC407A', good: true,
@@ -440,7 +440,7 @@
         delta: 6.6, score: sc('You', 74.2, 'Your opponent', 77.2), sound: 'boo', mine: true },
       { kind: 'lost', emoji: '⚠️', label: 'YOU HAVE LOST THE LEAD', colour: RED, good: false,
         score: sc('You', 74.2, 'Your opponent', 77.2), sound: 'lead', mine: true },
-      { kind: 'fg', emoji: '🎯', label: 'FIELD GOAL', detail: '52-yd field goal', who: 'You', colour: '#29B6F6', good: true,
+      { kind: 'fg', emoji: '🎯', label: 'FIELD GOAL', detail: '52-yd field goal', who: 'You', colour: '#29B6F6', good: true, mineRow: true,
         player: 'Trey Smack', pos: 'K', nfl: 'GB', nflColour: NFL_COLOURS.GB, photo: PHOTO + '13545.jpg',
         delta: 5.0, score: sc('You', 79.2, 'Your opponent', 77.2), mine: true }
     ];
