@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fantasy TV</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: transparent;
+               font-family: Roboto, "Helvetica Neue", Arial, sans-serif; }
+  body.bg { background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 10%),
+      linear-gradient(180deg, #2f6b2f, #1f4f22 60%, #173d1a); }
+  body.bg:after { content: "your TV picture"; position: fixed; left: 50%; top: 55%; transform: translate(-50%, -50%);
+                  color: rgba(255,255,255,0.22); font-size: 3vw; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+  iframe { position: fixed; border: 0; background: transparent; visibility: hidden; }
+  iframe.on { visibility: visible; }
+  #toast { position: fixed; left: 1.2vw; bottom: 1.2vw; max-width: 45vw; padding: 0.7vw 1.2vw; border-radius: 0.8vw;
+           background: rgba(10,14,22,0.85); color: #e9edf3; font-size: 1.1vw; opacity: 0; transition: opacity 0.4s; }
+  #toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+<iframe id="card" title="alert"></iframe>
+<iframe id="big" title="scoreboard pop-up"></iframe>
+<iframe id="ticker" title="live scores"></iframe>
+<div id="toast"></div>
+<script src="engine.js"></script>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var flag = function (k, d) { var v = q.get(k); return v === null ? d : !/^(0|false|no|off)$/i.test(v); };
+  var style = q.get('style') || 'broadcast';
+  var size = parseFloat(q.get('size') || '1');
+  var cfg = {
+    user: q.get('user') || '', league: q.get('league') || '',
+    everything: flag('everything', false), tdsOnly: flag('tdsonly', false), sacks: flag('sacks', true),
+    leadChanges: flag('leads', true), teamNames: flag('teamnames', false),
+    interval: parseInt(q.get('interval') || '30', 10), board: parseInt(q.get('board') || '15', 10),
+    bigPlay: parseFloat(q.get('bigplay') || '3'),
+    simulate: q.get('simulate'), speed: parseFloat(q.get('speed') || '6'), steps: parseInt(q.get('steps') || '120', 10),
+    week: q.get('week') ? parseInt(q.get('week'), 10) : null
+  };
+  var DURATION = parseInt(q.get('duration') || '8', 10);
+  var SOUND = flag('sound', true), TICKER = flag('ticker', true);
+  if (flag('bg', false)) document.body.className = 'bg';
+
+  // window sizes in 1080p TV pixels, turned into a share of the screen width
+  var STYLES = { broadcast: [720, 200, 'top-right'], stadium: [720, 220, 'top-right'], strip: [1200, 130, 'bottom-center'] };
+  var S = STYLES[style] || STYLES.broadcast;
+  var vw = function (px) { return (px * size / 19.2) + 'vw'; };
+  function place(el, w, h, where) {
+    el.style.width = vw(w); el.style.height = vw(h);
+    el.style.top = el.style.bottom = el.style.left = el.style.right = 'auto';
+    var m = vw(24);
+    if (where === 'top-right') { el.style.top = m; el.style.right = m; }
+    else if (where === 'top-left') { el.style.top = m; el.style.left = m; }
+    else { el.style.bottom = m; el.style.left = 'calc(50% - ' + (w * size / 38.4) + 'vw)'; }
+  }
+  var card = document.getElementById('card'), big = document.getElementById('big'), ticker = document.getElementById('ticker');
+  var pos = q.get('position') || S[2];
+  card.src = 'alert.html?embed=1&theme=' + style;
+  big.src = 'alert.html?embed=1&theme=' + style;
+  ticker.src = 'alert.html?embed=1&board=1&theme=' + style;
+  place(card, S[0], S[1], pos);
+
+  // ---------------------------------------------------------------- sounds
+  var ctx = null;
+  function tone(notes, lead) {
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+      var t = ctx.currentTime + (lead || 0.3);
+      notes.forEach(function (n) {
+        if (n[0]) {
+          [1, 2, 3].forEach(function (h, i) {
+            var o = ctx.createOscillator(), g = ctx.createGain();
+            o.frequency.value = n[0] * h; o.type = 'sine';
+            g.gain.setValueAtTime(0, t);
+            g.gain.linearRampToValueAtTime([0.22, 0.1, 0.04][i], t + 0.01);
+            g.gain.setValueAtTime([0.22, 0.1, 0.04][i], t + n[1] - 0.06);
+            g.gain.linearRampToValueAtTime(0, t + n[1]);
+            o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + n[1] + 0.02);
+          });
+        }
+        t += n[1];
+      });
+    } catch (e) { /* no audio on this device */ }
+  }
+  var SOUNDS = {
+    td: [[523, 0.12], [659, 0.12], [784, 0.12], [0, 0.04], [1047, 0.45]],
+    boo: [[392, 0.28], [370, 0.28], [349, 0.28], [330, 0.7]],
+    lead: [[880, 0.1], [1175, 0.3]]
+  };
+
+  // ---------------------------------------------------------------- the queue
+  var queue = [], busy = false;
+  function post(frame, msg) {
+    var send = function () { frame.contentWindow.postMessage(msg, '*'); };
+    if (frame.dataset.ready) send(); else frame.addEventListener('load', function () { frame.dataset.ready = 1; send(); }, { once: true });
+  }
+  [card, big, ticker].forEach(function (f) { f.addEventListener('load', function () { f.dataset.ready = 1; }); });
+
+  function add(a) {
+    a.duration = a.duration || DURATION;
+    var minor = a.kind !== 'td' && a.kind !== 'lead' && a.kind !== 'lost';
+    if (a.kind !== 'scores' && a.kind !== 'matchups' &&
+        ((queue.length >= 3 && !a.mine) || (queue.length >= 6 && minor))) return;  // TV falling behind
+    queue.push(a);
+    if (!busy) next();
+  }
+  function next() {
+    var a = queue.shift();
+    if (!a) { busy = false; return; }
+    busy = true;
+    var isBoard = a.kind === 'scores' || a.kind === 'matchups', f = isBoard ? big : card;
+    if (isBoard) {
+      var rows = (a.lines || []).length;
+      place(big, 760, 96 + 52 * rows, S[2] === 'bottom-center' ? 'top-right' : pos);
+    }
+    post(f, { type: 'alert', alert: a });
+    f.className = 'on';
+    if (SOUND && a.sound && SOUNDS[a.sound]) tone(SOUNDS[a.sound]);
+    setTimeout(function () { f.className = ''; setTimeout(next, 500); }, a.duration * 1000 + 300);
+  }
+
+  var toastTimer;
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = 'Fantasy TV: ' + msg; t.className = 'on';
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.className = ''; }, 8000);
+    if (window.console) console.log(msg);
+  }
+
+  var tickerRows = 0;
+  function board(b) {
+    if (!TICKER) return;
+    if (b.rows.length !== tickerRows) { tickerRows = b.rows.length; place(ticker, 760 * 0.75, (96 + 52 * tickerRows) * 0.75, 'top-left'); }
+    post(ticker, { type: 'board', board: b });
+    ticker.className = 'on';
+  }
+
+  if (flag('demo', false)) {
+    FTA.demoAlerts().forEach(add);
+    return;
+  }
+  if (!cfg.user) { toast('add ?user=YourSleeperName to the link'); return; }
+  var engine = new FTA.Engine(cfg, { alert: add, board: board, status: toast });
+  engine.start().catch(function (e) { toast(e.message); });
+  window.ftaEngine = engine;
+})();
+</script>
+</body>
+</html>

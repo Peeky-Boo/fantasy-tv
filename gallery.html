@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overlay Gallery</title>
+<style>
+  :root { --bg: #0b0d12; --panel: #141821; --ink: #e9edf3; --muted: #8b95a5; --gold: #FFC107; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, Roboto, Arial, sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; background: rgba(11,13,18,0.95); padding: 14px 16px;
+           display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid #222835; }
+  h1 { font-size: 17px; margin: 0 12px 0 0; }
+  button { background: var(--panel); color: var(--ink); border: 1px solid #2a3140; border-radius: 8px;
+           padding: 8px 14px; font-size: 14px; cursor: pointer; }
+  button.on { background: var(--gold); color: #111; border-color: var(--gold); font-weight: 700; }
+  main { padding: 16px; max-width: 1320px; margin: 0 auto; }
+  .note { color: var(--muted); font-size: 14px; margin: 0 0 14px; max-width: 760px; line-height: 1.45; }
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 26px 0 10px; }
+  .tv { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden;
+        background:
+          radial-gradient(ellipse at 50% 120%, rgba(0,0,0,0.5), transparent 60%),
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 10%),
+          linear-gradient(180deg, #2f6b2f, #1f4f22 60%, #173d1a); }
+  .tv .tag { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%);
+             color: rgba(255,255,255,0.22); font-size: 3vw; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+  .tv iframe { position: absolute; border: 0; background: transparent; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; }
+  .cell { background: #1b2a1d; border-radius: 10px; padding: 10px; overflow: hidden;
+          background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 12%); }
+  .cell .cap { font-size: 13px; color: var(--muted); margin: 2px 2px 8px; }
+  .frame { position: relative; overflow: hidden; }
+  .frame iframe { border: 0; background: transparent; transform-origin: top left; position: absolute; top: 0; left: 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Fantasy TV Alerts: overlay styles</h1>
+  <button data-theme="broadcast" class="on">Broadcast</button>
+  <button data-theme="stadium">Stadium</button>
+  <button data-theme="strip">Lower third</button>
+  <button id="replay">Replay animations</button>
+</header>
+<main>
+  <p class="note" id="desc"></p>
+  <h2>On a 1080p TV, at real size</h2>
+  <div class="tv" id="tv"><span class="tag">RedZone</span></div>
+  <h2>Every alert</h2>
+  <div class="grid" id="grid"></div>
+  <h2>Scoreboards (same in every style)</h2>
+  <div class="grid" id="boards"></div>
+</main>
+<script>
+  var THEMES = {
+    broadcast: { w: 720, h: 200, pos: 'top-right',
+      desc: 'Dark glass card in the top-right corner with a stripe in the manager\'s colour, like a broadcast graphic. Quiet enough to leave on all afternoon.' },
+    stadium: { w: 720, h: 220, pos: 'top-right',
+      desc: 'Loud. The card fills with the manager\'s colour (red for a rival scoring against you), big italic type. Hard to miss from across the room.' },
+    strip: { w: 1200, h: 130, pos: 'bottom-center',
+      desc: 'A slim strip along the bottom, like a sports channel lower third. Covers the least of the picture, but sits where RedZone shows its own score bug.' }
+  };
+  var C = { me: '#29B6F6', c2: '#EC407A', c3: '#FFCA28', c4: '#D4E157', red: '#E53935' };
+  function sc(a, ap, ac, b, bp, bc) { return { a: { name: a, pts: ap, colour: ac, mine: true }, b: { name: b, pts: bp, colour: bc } }; }
+  var mine = sc('You', 96.4, C.me, 'Gridiron Gang', 88.1, C.c2);
+  var SAMPLES = [
+    ['Your touchdown (fanfare plays)', { kind: 'td', emoji: '🏈', label: 'TOUCHDOWN', who: 'You', colour: C.me, good: true,
+      player: 'Trevor Lawrence', pos: 'QB', nfl: 'JAX', nflColour: '#00839C', delta: 6.8, score: mine, duration: 99 }],
+    ['Your opponent scores (sad trombone)', { kind: 'td', emoji: '🏈', label: 'TOUCHDOWN', who: 'Gridiron Gang', colour: C.c2, good: true,
+      player: 'CeeDee Lamb', pos: 'WR', nfl: 'DAL', nflColour: '#2F6FD6', delta: 9.1, score: sc('You', 96.4, C.me, 'Gridiron Gang', 97.2, C.c2), duration: 99 }],
+    ['IDP sack or takeaway', { kind: 'sack', emoji: '💥', label: 'SACK / TAKEAWAY', who: 'You', colour: C.me, good: true,
+      player: 'Myles Garrett', pos: 'DE', nfl: 'CLE', nflColour: '#FF3C00', delta: 9.4, score: mine, duration: 99 }],
+    ['Field goal', { kind: 'fg', emoji: '🎯', label: 'FIELD GOAL', who: 'Gridiron Gang', colour: C.c2, good: true,
+      player: 'Trey Smack', pos: 'K', nfl: 'GB', nflColour: '#FFB612', delta: 5.0, score: mine, duration: 99 }],
+    ['Big play', { kind: 'big', emoji: '⚡', label: 'BIG PLAY', who: 'You', colour: C.me, good: true,
+      player: 'Parker Washington', pos: 'WR', nfl: 'JAX', nflColour: '#00839C', delta: 4.3, score: mine, duration: 99 }],
+    ['Turnover', { kind: 'turnover', emoji: '😬', label: 'TURNOVER', who: 'You', colour: C.me, good: false,
+      player: 'Trevor Lawrence', pos: 'QB', nfl: 'JAX', nflColour: '#00839C', delta: -1.0, score: mine, duration: 99 }],
+    ['Lead change (another matchup)', { kind: 'lead', emoji: '🔥', label: 'HAIL MARYS TAKE THE LEAD', colour: C.c4, good: true,
+      score: sc('Tush Push', 112.4, C.c3, 'Hail Marys', 118.0, C.c4), duration: 99 }],
+    ['You lose the lead', { kind: 'lost', emoji: '⚠️', label: 'YOU HAVE LOST THE LEAD', colour: C.red, good: false,
+      score: sc('You', 96.4, C.me, 'Gridiron Gang', 97.2, C.c2), duration: 99 }]
+  ];
+  var rows = [
+    { a: { name: 'You', pts: 96.4, colour: C.me }, b: { name: 'Gridiron Gang', pts: 97.2, colour: C.c2 }, mine: true },
+    { a: { name: 'Tush Push', pts: 112.4, colour: C.c3 }, b: { name: 'Hail Marys', pts: 118.0, colour: C.c4 } },
+    { a: { name: 'Bench Warmers', pts: 101.9, colour: '#FF7043' }, b: { name: 'Red Zone Raiders', pts: 87.5, colour: '#7E57C2' } },
+    { a: { name: 'Fourth and Long', pts: 131.2, colour: '#66BB6A' }, b: { name: 'Pick Six', pts: 92.0, colour: '#AB47BC' } },
+    { a: { name: 'Blitz Boys', pts: 70.3, colour: '#26C6DA' }, b: { name: 'End Zone Dancers', pts: 104.8, colour: '#8D6E63' } }
+  ];
+  var BOARDS = [
+    ['Opening pop-up: this week\'s matchups', { kind: 'matchups', emoji: '🏈', label: 'Your League  WEEK 10', colour: '#FFC107',
+      lines: rows.map(function (r) { return Object.assign({ preview: true }, r); }), duration: 99 }, 760, 96 + 52 * 5],
+    ['Live scores (every 15 minutes, or always on in the corner)', { kind: 'scores', emoji: '📊', label: 'Your League  WEEK 10', colour: '#FFC107',
+      lines: rows, duration: 99 }, 760, 96 + 52 * 5]
+  ];
+
+  var theme = 'broadcast';
+  function src(data) { return 'alert.html?stay=1&theme=' + theme + '&data=' + encodeURIComponent(JSON.stringify(data)); }
+  function framed(cap, data, w, h) {
+    var cell = document.createElement('div'); cell.className = 'cell';
+    cell.innerHTML = '<div class="cap">' + cap + '</div><div class="frame"><iframe></iframe></div>';
+    var fr = cell.querySelector('.frame'), ifr = cell.querySelector('iframe');
+    ifr.width = w; ifr.height = h; ifr.src = src(data);
+    requestAnimationFrame(function () {
+      var k = fr.clientWidth / w; ifr.style.transform = 'scale(' + k + ')'; fr.style.height = (h * k) + 'px';
+    });
+    return cell;
+  }
+  function draw() {
+    var t = THEMES[theme];
+    document.getElementById('desc').textContent = t.desc;
+    var grid = document.getElementById('grid'); grid.innerHTML = '';
+    SAMPLES.forEach(function (s) { grid.appendChild(framed(s[0], s[1], t.w, t.h)); });
+    var boards = document.getElementById('boards');
+    if (!boards.children.length) BOARDS.forEach(function (b) { boards.appendChild(framed(b[0], b[1], b[2], b[3])); });
+    var tv = document.getElementById('tv');
+    tv.querySelectorAll('iframe').forEach(function (f) { f.remove(); });
+    var k = tv.clientWidth / 1920;
+    var f = document.createElement('iframe'); f.width = t.w; f.height = t.h; f.src = src(SAMPLES[0][1]);
+    f.style.transformOrigin = 'top left'; f.style.transform = 'scale(' + k + ')';
+    var margin = 24 * k;
+    if (t.pos === 'top-right') { f.style.top = margin + 'px'; f.style.left = (tv.clientWidth - t.w * k - margin) + 'px'; }
+    else { f.style.left = ((tv.clientWidth - t.w * k) / 2) + 'px'; f.style.top = (tv.clientHeight - t.h * k - margin) + 'px'; }
+    tv.appendChild(f);
+    var b = document.createElement('iframe'); var bw = 570, bh = 267;
+    b.width = 760; b.height = 356; b.src = src(BOARDS[1][1]);
+    b.style.transformOrigin = 'top left'; b.style.transform = 'scale(' + (k * 0.75) + ')';
+    b.style.top = margin + 'px'; b.style.left = margin + 'px';
+    tv.appendChild(b);
+  }
+  document.querySelectorAll('[data-theme]').forEach(function (btn) {
+    btn.onclick = function () {
+      theme = btn.dataset.theme;
+      document.querySelectorAll('[data-theme]').forEach(function (x) { x.classList.toggle('on', x === btn); });
+      draw();
+    };
+  });
+  document.getElementById('replay').onclick = function () {
+    document.getElementById('boards').innerHTML = ''; draw();
+  };
+  window.addEventListener('resize', draw);
+  draw();
+</script>
+</body>
+</html>

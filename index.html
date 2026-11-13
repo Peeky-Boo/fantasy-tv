@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fantasy TV</title>
+<meta name="description" content="Sleeper fantasy alerts over whatever is on your Fire TV.">
+<style>
+  :root {
+    --bg: #0b0d12; --panel: #141821; --line: #252c3a; --ink: #eef1f6; --muted: #98a2b3;
+    --gold: #FFC107; --blue: #29B6F6; --green: #1DB954; --red: #E53935;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+  a { color: var(--blue); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px 60px; }
+  .hero { padding: 40px 0 18px; }
+  .hero h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.05; margin: 0 0 10px; letter-spacing: -0.02em; }
+  .hero h1 span { color: var(--gold); }
+  .hero p { color: var(--muted); margin: 0; max-width: 620px; font-size: 17px; }
+  .shot { margin: 22px 0 6px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 16 / 9; position: relative; }
+  .shot iframe { border: 0; width: 100%; height: 100%; display: block; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 18px 0; }
+  section h2 { margin: 0 0 4px; font-size: 20px; display: flex; gap: 10px; align-items: center; }
+  .n { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #111;
+       display: grid; place-items: center; font-size: 15px; font-weight: 800; }
+  .sub { color: var(--muted); margin: 0 0 14px; }
+  label { display: block; font-size: 14px; color: var(--muted); margin: 12px 0 6px; }
+  input[type=text] { width: 100%; max-width: 360px; padding: 11px 12px; border-radius: 9px; border: 1px solid var(--line);
+                     background: #0e1219; color: var(--ink); font-size: 16px; }
+  select { padding: 10px; border-radius: 9px; border: 1px solid var(--line); background: #0e1219; color: var(--ink); font-size: 16px; max-width: 100%; }
+  button, .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border-radius: 9px;
+                 border: 1px solid var(--line); background: #1b2130; color: var(--ink); font-size: 15px; font-weight: 600;
+                 cursor: pointer; text-decoration: none; }
+  button.primary, .btn.primary { background: var(--gold); border-color: var(--gold); color: #111; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .msg { margin-top: 10px; font-size: 15px; }
+  .msg.err { color: #ff8a80; }
+  .styles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .style { border: 2px solid var(--line); border-radius: 12px; padding: 10px; cursor: pointer; background: #0e1219; }
+  .style.on { border-color: var(--gold); }
+  .style b { display: block; margin-bottom: 2px; }
+  .style small { color: var(--muted); display: block; margin-bottom: 8px; }
+  .style .pv { position: relative; width: 100%; aspect-ratio: 720 / 220; overflow: hidden; border-radius: 8px;
+               background: repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0 2px, transparent 2px 12%), #23502a; }
+  .style .pv iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: top left; pointer-events: none; }
+  .checks { display: grid; gap: 8px; margin-top: 14px; }
+  .checks label { display: flex; gap: 10px; align-items: flex-start; margin: 0; color: var(--ink); font-size: 15px; }
+  .checks small { color: var(--muted); }
+  .tabs { display: flex; gap: 6px; margin: 14px 0 10px; flex-wrap: wrap; }
+  .tabs button { padding: 8px 14px; }
+  .tabs button.on { background: var(--gold); color: #111; border-color: var(--gold); }
+  pre { background: #0a0d13; border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow-x: auto;
+        white-space: pre-wrap; word-break: break-all; font-size: 13px; color: #cfe3ff; margin: 8px 0; }
+  ol { padding-left: 22px; margin: 8px 0; }
+  ol li { margin: 6px 0; }
+  .tv-note { border-left: 4px solid var(--gold); background: rgba(255,193,7,0.08); padding: 10px 12px; border-radius: 6px; margin: 10px 0; }
+  .hidden { display: none; }
+  footer { color: var(--muted); font-size: 13px; text-align: center; margin-top: 30px; }
+  @media (max-width: 520px) { section { padding: 16px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>Fantasy <span>TV</span></h1>
+    <p>Pop-ups over RedZone (or anything on your Fire TV) when someone in your Sleeper league scores: touchdowns, sacks, big plays, lead changes, with a live scoreboard in the corner. Points come straight from Sleeper, so they match your league exactly.</p>
+    <div class="shot"><iframe src="tv.html?demo=1&bg=1" title="Example" loading="lazy"></iframe></div>
+  </div>
+
+  <section>
+    <h2><span class="n">1</span> Find your league</h2>
+    <p class="sub">Your Sleeper username (Sleeper app: tap your avatar, then Settings).</p>
+    <div class="row">
+      <input type="text" id="user" placeholder="Sleeper username" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="primary" id="find">Find my league</button>
+    </div>
+    <div id="leagueBox" class="hidden">
+      <label for="league">League</label>
+      <select id="league"></select>
+    </div>
+    <div class="msg" id="findMsg"></div>
+  </section>
+
+  <section id="s2" class="hidden">
+    <h2><span class="n">2</span> Pick the look</h2>
+    <div class="styles" id="styles"></div>
+    <div class="checks">
+      <label><input type="checkbox" id="ticker" checked> <span>Live scoreboard in the top-left corner all game</span></label>
+      <label><input type="checkbox" id="everything"> <span>Every alert for every matchup <small>(otherwise: everything for yours, touchdowns and lead changes for the rest)</small></span></label>
+      <label><input type="checkbox" id="sound" checked> <span>Sounds: fanfare on your TDs, sad trombone on your opponent's <small>(turn off if the picture stutters when one plays)</small></span></label>
+      <label><input type="checkbox" id="big"> <span>Bigger pop-ups <small>(for a small TV or a big room)</small></span></label>
+    </div>
+    <div class="row">
+      <a class="btn" id="tryDemo" target="_blank" rel="noopener">See it with sample alerts</a>
+      <a class="btn" id="tryRun" target="_blank" rel="noopener">Practice run with last week's real scores</a>
+    </div>
+  </section>
+
+  <section id="s3" class="hidden">
+    <h2><span class="n">3</span> Put it on your TV <span style="font-weight:400;color:var(--muted);font-size:15px">(once, about 10 minutes)</span></h2>
+    <p class="sub">You need a Mac or Windows computer on the same Wi-Fi as the Fire TV, just for this step.</p>
+    <p><b>On the TV</b>, with the remote:</p>
+    <ol>
+      <li><b>Settings &gt; My Fire TV &gt; About</b>: click your device name 7 times until it says you're a developer.</li>
+      <li><b>Settings &gt; My Fire TV &gt; Developer options</b>: turn <b>ADB debugging</b> on.</li>
+      <li><b>Settings &gt; My Fire TV &gt; About &gt; Network</b>: note the <b>IP address</b>.</li>
+    </ol>
+    <label for="tvip">Fire TV IP address</label>
+    <input type="text" id="tvip" placeholder="e.g. 192.168.1.50" inputmode="decimal" autocomplete="off">
+    <div class="tabs" id="osTabs">
+      <button data-os="mac" class="on">Mac</button>
+      <button data-os="win">Windows</button>
+    </div>
+    <div id="mac">
+      <ol>
+        <li>Open <b>Terminal</b> (press Cmd+Space, type Terminal, press Return).</li>
+        <li>Paste this and press Return:</li>
+      </ol>
+      <pre id="macCmd"></pre>
+      <button id="copyMac">Copy</button>
+    </div>
+    <div id="win" class="hidden">
+      <ol>
+        <li>Open <b>PowerShell</b> (press the Windows key, type PowerShell, press Enter).</li>
+        <li>Paste this and press Enter:</li>
+      </ol>
+      <pre id="winCmd"></pre>
+      <button id="copyWin">Copy</button>
+    </div>
+    <div class="tv-note"><b>Watch the TV</b> while it runs: when it asks <i>Allow USB debugging?</i>, tick <i>Always allow</i> and choose <b>OK</b>.</div>
+    <p class="sub">It downloads Android's official tool from Google and PiPup (a free, open-source overlay app) from GitHub, installs PiPup on the TV, then starts Fantasy TV. It also leaves a <b>Start Fantasy TV</b> file on your desktop.</p>
+  </section>
+
+  <section id="s4" class="hidden">
+    <h2><span class="n">4</span> On Sunday</h2>
+    <p>Fantasy TV stays on until the TV restarts. If it's gone, either double-click <b>Start Fantasy TV</b> on the computer you set up with, or make a one-tap phone shortcut:</p>
+    <div class="tabs" id="phoneTabs">
+      <button data-ph="iphone" class="on">iPhone</button>
+      <button data-ph="android">Android</button>
+    </div>
+    <div id="iphone">
+      <ol>
+        <li>Open the <b>Shortcuts</b> app, tap <b>+</b>, name it <i>Fantasy TV</i>.</li>
+        <li>Add a <b>Text</b> action and paste this into it:</li>
+      </ol>
+      <pre id="jsonA"></pre>
+      <ol start="3">
+        <li>Add <b>Get Contents of URL</b>. URL: <code id="notifyA"></code></li>
+        <li>Tap the arrow on that action: Method <b>POST</b>, Request Body <b>File</b>, choose the <b>Text</b> from step 2. Add a header <code>Content-Type</code> = <code>application/json</code>.</li>
+        <li>Add it to your Home Screen. One tap on Sunday puts Fantasy TV on the TV.</li>
+      </ol>
+    </div>
+    <div id="android" class="hidden">
+      <ol>
+        <li>Install <b>HTTP Shortcuts</b> from the Play Store.</li>
+        <li>New shortcut: method <b>POST</b>, URL <code id="notifyB"></code></li>
+        <li>Request body: custom text, type <code>application/json</code>, paste:</li>
+      </ol>
+      <pre id="jsonB"></pre>
+      <ol start="4"><li>Add it to your home screen.</li></ol>
+    </div>
+    <p class="sub">Your personal link (handy to bookmark): <a id="myLink" target="_blank" rel="noopener"></a></p>
+  </section>
+
+  <footer>Fantasy TV is a fan project, not made by or connected to Sleeper or the NFL. Scores from Sleeper's public API.</footer>
+</div>
+
+<script>
+(function () {
+  var API = 'https://api.sleeper.app/v1';
+  var base = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
+  var $ = function (id) { return document.getElementById(id); };
+  var state = { user: '', league: '', style: 'broadcast' };
+  var STYLES = [
+    ['broadcast', 'Broadcast', 'Dark glass card, top right'],
+    ['stadium', 'Stadium', 'Loud, in the manager\'s colour'],
+    ['strip', 'Lower third', 'Slim strip along the bottom']
+  ];
+  var SAMPLE = { kind: 'td', emoji: '🏈', label: 'TOUCHDOWN', detail: '34-yd TD catch', who: 'You', colour: '#29B6F6', good: true,
+    player: "Ja'Marr Chase", pos: 'WR', nfl: 'CIN', nflColour: '#FB4F14', photo: 'https://sleepercdn.com/content/nfl/players/thumb/7564.jpg',
+    delta: 9.9, score: { a: { name: 'You', pts: 74.2, colour: '#29B6F6', mine: true }, b: { name: 'Your opponent', pts: 61.0, colour: '#EC407A' } }, duration: 99 };
+
+  try { var saved = JSON.parse(localStorage.getItem('fta') || '{}'); } catch (e) { saved = {}; }
+  if (saved.user) $('user').value = saved.user;
+  if (saved.tvip) $('tvip').value = saved.tvip;
+  if (saved.style) state.style = saved.style;
+  function save() { try { localStorage.setItem('fta', JSON.stringify({ user: state.user, tvip: $('tvip').value.trim(), style: state.style })); } catch (e) {} }
+
+  function getJSON(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
+
+  $('find').onclick = function () {
+    var u = $('user').value.trim();
+    var msg = $('findMsg'); msg.className = 'msg'; msg.textContent = 'Looking...';
+    if (!u) { msg.className = 'msg err'; msg.textContent = 'Type your Sleeper username first.'; return; }
+    getJSON(API + '/state/nfl').then(function (st) {
+      return getJSON(API + '/user/' + encodeURIComponent(u)).then(function (user) {
+        if (!user) throw new Error('nouser');
+        return getJSON(API + '/user/' + user.user_id + '/leagues/nfl/' + (st.league_season || st.season)).then(function (ls) { return [user, ls || []]; });
+      });
+    }).then(function (x) {
+      var user = x[0], ls = x[1];
+      if (!ls.length) { msg.className = 'msg err'; msg.textContent = 'No NFL leagues this season for ' + user.display_name + '.'; return; }
+      state.user = user.username || u;
+      $('league').innerHTML = ls.map(function (l) { return '<option value="' + l.league_id + '">' + l.name.replace(/</g, '') + ' (' + l.total_rosters + ' teams)</option>'; }).join('');
+      $('leagueBox').classList.toggle('hidden', ls.length < 2);
+      state.league = ls[0].league_id;
+      msg.textContent = 'Found you, ' + user.display_name + ': ' + ls[0].name + (ls.length > 1 ? ' (pick another league above if you like)' : '') + '.';
+      ['s2', 's3', 's4'].forEach(function (s) { $(s).classList.remove('hidden'); });
+      save(); update();
+    }).catch(function (e) {
+      msg.className = 'msg err';
+      msg.textContent = e.message === 'nouser' ? 'No Sleeper user called "' + u + '". It needs the username, not the display name.' : 'Couldn\'t reach Sleeper. Try again in a moment.';
+    });
+  };
+  $('user').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('find').click(); });
+  $('league').onchange = function () { state.league = this.value; update(); };
+
+  // style picker with live previews
+  $('styles').innerHTML = STYLES.map(function (s) {
+    return '<div class="style" data-s="' + s[0] + '"><b>' + s[1] + '</b><small>' + s[2] + '</small><div class="pv"><iframe tabindex="-1" title="' + s[1] + '"></iframe></div></div>';
+  }).join('');
+  var SIZES = { broadcast: [720, 200], stadium: [720, 220], strip: [1200, 130] };
+  document.querySelectorAll('.style').forEach(function (el) {
+    var s = el.dataset.s, f = el.querySelector('iframe'), sz = SIZES[s];
+    f.width = sz[0]; f.height = sz[1];
+    f.src = 'alert.html?stay=1&theme=' + s + '&data=' + encodeURIComponent(JSON.stringify(SAMPLE));
+    var fit = function () { var k = el.querySelector('.pv').clientWidth / sz[0]; f.style.transform = 'scale(' + k + ')'; };
+    requestAnimationFrame(fit); window.addEventListener('resize', fit);
+    el.onclick = function () { state.style = s; save(); update(); };
+  });
+  ['ticker', 'everything', 'sound', 'big'].forEach(function (id) { $(id).onchange = update; });
+  $('tvip').oninput = function () { save(); update(); };
+
+  function tabs(group, attr, panes) {
+    document.querySelectorAll('#' + group + ' button').forEach(function (b) {
+      b.onclick = function () {
+        document.querySelectorAll('#' + group + ' button').forEach(function (x) { x.classList.toggle('on', x === b); });
+        panes.forEach(function (p) { $(p).classList.toggle('hidden', p !== b.dataset[attr]); });
+      };
+    });
+  }
+  tabs('osTabs', 'os', ['mac', 'win']);
+  tabs('phoneTabs', 'ph', ['iphone', 'android']);
+  if (/Win/.test(navigator.platform)) document.querySelector('[data-os=win]').click();
+  if (/Android/.test(navigator.userAgent)) document.querySelector('[data-ph=android]').click();
+
+  function appUrl() {
+    var p = ['user=' + encodeURIComponent(state.user), 'league=' + state.league, 'style=' + state.style];
+    if (!$('ticker').checked) p.push('ticker=0');
+    if ($('everything').checked) p.push('everything=1');
+    if (!$('sound').checked) p.push('sound=0');
+    if ($('big').checked) p.push('size=1.3');
+    return base + 'tv.html?' + p.join('&');
+  }
+  function update() {
+    document.querySelectorAll('.style').forEach(function (el) { el.classList.toggle('on', el.dataset.s === state.style); });
+    if (!state.user) return;
+    var url = appUrl(), ip = $('tvip').value.trim() || 'YOUR-TV-IP';
+    $('tryDemo').href = base + 'tv.html?demo=1&bg=1&style=' + state.style + ($('big').checked ? '&size=1.3' : '');
+    $('tryRun').href = url + '&simulate=last&bg=1&speed=4';
+    $('myLink').href = url; $('myLink').textContent = url;
+    $('macCmd').textContent = 'curl -fsSL ' + base + 'kit/setup-mac.sh | bash -s -- "' + url + '" ' + (ip === 'YOUR-TV-IP' ? '' : ip);
+    $('winCmd').textContent = "$AppUrl='" + url + "'; $TvIp='" + (ip === 'YOUR-TV-IP' ? '' : ip) + "'; irm " + base + 'kit/setup-windows.ps1 | iex';
+    var json = JSON.stringify({ id: 'fantasy-tv', duration: 0, position: 4, padding: 0, borderWidth: 0, fullscreen: true,
+      backgroundColor: '#00000000', media: { web: { uri: url, width: 1920, height: 1080, transparent: true, muted: !$('sound').checked } } });
+    $('jsonA').textContent = $('jsonB').textContent = json;
+    $('notifyA').textContent = $('notifyB').textContent = 'http://' + ip + ':7979/notify';
+  }
+  function copy(id) { var t = $(id).textContent; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).catch(function () {}); }
+  $('copyMac').onclick = function () { copy('macCmd'); this.textContent = 'Copied'; };
+  $('copyWin').onclick = function () { copy('winCmd'); this.textContent = 'Copied'; };
+  update();
+  if (saved.user) $('find').click();
+})();
+</script>
+</body>
+</html>

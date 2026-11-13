@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TV Preview</title>
+<style>
+  :root { --bg: #0b0d12; --ink: #e9edf3; --muted: #8b95a5; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, Roboto, Arial, sans-serif; }
+  header { padding: 14px 20px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+  header span { color: var(--muted); font-size: 13px; }
+  label { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+  .tv { position: relative; width: min(100vw - 32px, 1280px); aspect-ratio: 16 / 9; margin: 0 16px 16px;
+        border-radius: 10px; overflow: hidden;
+        background:
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.07) 0 2px, transparent 2px 10%),
+          linear-gradient(180deg, #2f6b2f, #1f4f22 60%, #173d1a); }
+  .tv::after { content: "your TV picture"; position: absolute; left: 50%; top: 55%; transform: translate(-50%, -50%);
+               color: rgba(255,255,255,0.25); font-size: 3vw; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+  /* PiPup windows, drawn at their real pixel size and scaled with the TV */
+  .win { position: absolute; border: 0; background: transparent; transform-origin: top right; z-index: 1; }
+  #alert { top: 2%; right: 1.5%; width: 720px; height: 200px; }
+  #board { top: 2%; left: 1.5%; width: 570px; height: 267px; transform-origin: top left; display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Fantasy TV Alerts: preview</h1>
+  <span id="status">waiting for the first alert...</span>
+  <label><input type="checkbox" id="showBoard"> live scoreboard banner</label>
+</header>
+<div class="tv" id="tv">
+  <iframe class="win" id="alert" title="alert"></iframe>
+  <iframe class="win" id="board" title="scoreboard"></iframe>
+</div>
+<script>
+  var tv = document.getElementById('tv'), alertF = document.getElementById('alert'), boardF = document.getElementById('board');
+  var last = 0;
+  function fit() {
+    var k = tv.clientWidth / 1920;   // PiPup sizes windows in real screen pixels
+    alertF.style.transform = boardF.style.transform = 'scale(' + k + ')';
+  }
+  window.addEventListener('resize', fit); fit();
+  document.getElementById('showBoard').onchange = function () {
+    boardF.style.display = this.checked ? 'block' : 'none';
+    if (this.checked && !boardF.src) boardF.src = 'alert.html?board=1';
+  };
+  function poll() {
+    fetch('/latest.json').then(function (r) { return r.json(); }).then(function (d) {
+      if (d.id && d.id !== last) {
+        last = d.id;
+        var a = d.alert, rows = (a.lines || []).length;
+        alertF.style.width = ((a.kind === 'scores' || a.kind === 'matchups') ? 760 : 720) + 'px';
+        alertF.style.height = (rows ? 96 + 52 * rows : 200) + 'px';
+        alertF.src = 'alert.html?id=' + d.id + '&theme=' + (new URLSearchParams(location.search).get('style') || 'broadcast');
+        document.getElementById('status').textContent = '#' + d.id + '  ' + a.title;
+      }
+    }).catch(function () { document.getElementById('status').textContent = 'script not running'; });
+  }
+  setInterval(poll, 1000); poll();
+</script>
+</body>
+</html>
