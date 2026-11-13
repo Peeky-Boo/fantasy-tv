@@ -128,6 +128,30 @@
   .row .w { color: var(--ink); }
   .row .x { text-align: center; color: var(--muted); font-size: 2vw; }
 
+  /* ---------- scoreboard flair ---------- */
+  .bhead { position: relative; overflow: hidden; }
+  .bhead:after { content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 35%;
+                 background: linear-gradient(105deg, transparent, rgba(255,255,255,0.2), transparent);
+                 animation: sweep 7s ease-in-out infinite; }
+  @keyframes sweep { 0%, 75% { left: -40%; } 100% { left: 110%; } }
+  .row { position: relative; }
+  .share { position: absolute; left: 3vw; right: 3vw; bottom: 0.6vw; height: 0.45vw; display: flex;
+           border-radius: 1vw; overflow: hidden; opacity: 0.8; }
+  .share b { display: block; height: 100%; transition: width 1.2s ease; }
+  .row .p { position: relative; }
+  .row .p.w { text-shadow: 0 0 1.6vw rgba(255,193,7,0.6); }
+  .crown { display: inline-block; margin: 0 0.5vw; font-size: 2.3vw; animation: bob 2.4s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-0.4vw) rotate(-8deg); } }
+  .bump { animation: bump 1.3s ease-out; }
+  @keyframes bump { 0% { color: #FFC107; transform: scale(1.4); } 60% { color: #FFC107; } 100% { transform: none; } }
+  .fly { position: absolute; left: 50%; top: -0.5vw; transform: translateX(-50%); font-size: 2vw; font-style: normal;
+         color: #1DB954; text-shadow: 0 0 1vw rgba(29,185,84,0.8); pointer-events: none;
+         animation: fly 1.8s ease-out forwards; white-space: nowrap; }
+  .fly.neg { color: #ff6b6b; text-shadow: none; }
+  @keyframes fly { 0% { opacity: 0; transform: translate(-50%, 1vw); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -4vw); } }
+  .flip { animation: flip 1.6s ease-out; }
+  @keyframes flip { 0%, 35% { background-color: rgba(255,193,7,0.4); } 100% { background-color: transparent; } }
+
 
   /* ================= THEME: STADIUM (team colour fills the card) ================= */
   .theme-stadium .card { background: linear-gradient(115deg, var(--accent) 0%, var(--accent-dark) 100%); border: 0; }
@@ -259,21 +283,44 @@
   }
 
   function boardHtml(title, rows, live, preview) {
-    var h = '<div class="board" id="card"><div class="bhead"><span class="t">' + esc(title) + '</span>' +
+    var h = '<div class="board" id="card"><div class="bhead"><span class="t">' + (live ? '🏆 ' : '🏈 ') + esc(title) + '</span>' +
             (live ? '<span class="live"><i></i>LIVE</span>' : '') + '</div>';
+    var top = 0;
+    if (!preview) rows.forEach(function (r) { top = Math.max(top, r.a.pts || 0, (r.b || {}).pts || 0); });
+    var crown = function (p) { return top > 0 && p === top ? '<span class="crown">👑</span>' : ''; };
     rows.forEach(function (r, i) {
       var a = r.a, b = r.b || {name: 'Bye', pts: 0, colour: '#555'};
       var wa = !preview && a.pts > b.pts, wb = !preview && b.pts > a.pts;
-      h += '<div class="row' + (r.mine ? ' mine' : '') + '" style="animation-delay:' + (0.25 + i * 0.07) + 's">' +
+      var share = Math.max(0.1, a.pts + b.pts), sa = (a.pts / share * 100).toFixed(1);
+      h += '<div class="row' + (r.mine ? ' mine' : '') + '" data-k="' + esc(a.name + '|' + b.name) + '" data-lead="' + (wa ? 'a' : wb ? 'b' : '') +
+        '" style="animation-delay:' + (0.25 + i * 0.07) + 's">' +
         '<i class="dot" style="background:' + a.colour + '"></i>' +
-        '<span class="n' + (wa ? ' w' : '') + '">' + esc(a.name) + '</span>' +
-        '<span class="p' + (wa ? ' w' : '') + '">' + (preview ? '' : pts(a.pts)) + '</span>' +
+        '<span class="n' + (wa ? ' w' : '') + '">' + esc(a.name) + crown(a.pts) + '</span>' +
+        '<span class="p' + (wa ? ' w' : '') + '" data-v="' + a.pts + '">' + (preview ? '' : pts(a.pts)) + '</span>' +
         '<span class="x">v</span>' +
-        '<span class="p' + (wb ? ' w' : '') + '">' + (preview ? '' : pts(b.pts)) + '</span>' +
-        '<span class="n b' + (wb ? ' w' : '') + '">' + esc(b.name) + '</span>' +
-        '<i class="dot" style="background:' + b.colour + '"></i></div>';
+        '<span class="p' + (wb ? ' w' : '') + '" data-v="' + b.pts + '">' + (preview ? '' : pts(b.pts)) + '</span>' +
+        '<span class="n b' + (wb ? ' w' : '') + '">' + crown(b.pts) + esc(b.name) + '</span>' +
+        '<i class="dot" style="background:' + b.colour + '"></i>' +
+        (preview ? '' : '<i class="share"><b style="width:' + sa + '%;background:' + a.colour + '"></b><b style="flex:1;background:' + b.colour + '"></b></i>') +
+        '</div>';
     });
     return h + '</div>';
+  }
+
+  // tick a score from its old value to the new one, with a floating "+6.6"
+  function bumpScore(el, from, to) {
+    var start = performance.now(), dur = 1100, d = to - from;
+    (function step(t) {
+      var k = Math.min(1, (t - start) / dur);
+      el.firstChild.nodeValue = pts(from + d * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    })(start);
+    el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    var f = document.createElement('em');
+    f.className = 'fly' + (d < 0 ? ' neg' : '');
+    f.textContent = (d > 0 ? '+' : '') + (Math.round(d * 10) / 10).toFixed(1);
+    el.appendChild(f);
+    setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 1900);
   }
 
   function render(a) {
@@ -324,10 +371,28 @@
     if (!b || !b.rows || !b.rows.length) return;
     var html = boardHtml(b.league + '  WEEK ' + b.week, b.rows, true, false);
     if (!drawn || !root.firstChild) { root.innerHTML = html; drawn = true; return; }
+    // remember what was on screen so changes can be animated
+    var old = {};
+    root.querySelectorAll('.row').forEach(function (r) {
+      var p = r.querySelectorAll('.p');
+      old[r.dataset.k] = { a: parseFloat(p[0].dataset.v), b: parseFloat(p[1].dataset.v), lead: r.dataset.lead,
+                           sa: (r.querySelector('.share b') || {}).style };
+    });
     var tmp = document.createElement('div'); tmp.innerHTML = html;
     tmp.querySelectorAll('.row').forEach(function (r) { r.style.animation = 'none'; });
+    var oldShares = {};
+    root.querySelectorAll('.row').forEach(function (r) { var s = r.querySelector('.share b'); if (s) oldShares[r.dataset.k] = s.style.width; });
     root.firstChild.replaceWith(tmp.firstChild);
     root.firstChild.style.animation = 'none';
+    root.querySelectorAll('.row').forEach(function (r) {
+      var o = old[r.dataset.k]; if (!o) return;
+      var p = r.querySelectorAll('.p'), vals = [parseFloat(p[0].dataset.v), parseFloat(p[1].dataset.v)];
+      if (Math.abs(vals[0] - o.a) >= 0.05) bumpScore(p[0], o.a, vals[0]);
+      if (Math.abs(vals[1] - o.b) >= 0.05) bumpScore(p[1], o.b, vals[1]);
+      if (o.lead && r.dataset.lead && o.lead !== r.dataset.lead) r.classList.add('flip');
+      var s = r.querySelector('.share b'), w = s && s.style.width;
+      if (s && oldShares[r.dataset.k]) { s.style.transition = 'none'; s.style.width = oldShares[r.dataset.k]; void s.offsetWidth; s.style.transition = ''; s.style.width = w; }
+    });
   }
   // the Fire Stick app (tv.html) hands alerts and scores to this page directly
   window.addEventListener('message', function (e) {

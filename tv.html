@@ -35,13 +35,14 @@
     user: q.get('user') || '', league: q.get('league') || '',
     everything: flag('everything', false), tdsOnly: flag('tdsonly', false), sacks: flag('sacks', true),
     leadChanges: flag('leads', true), teamNames: flag('teamnames', false),
-    interval: parseInt(q.get('interval') || '30', 10), board: parseInt(q.get('board') || '15', 10),
+    interval: parseInt(q.get('interval') || '30', 10), board: parseInt(q.get('board') || '10', 10),
     bigPlay: parseFloat(q.get('bigplay') || '3'),
     simulate: q.get('simulate'), speed: parseFloat(q.get('speed') || '6'), steps: parseInt(q.get('steps') || '120', 10),
     week: q.get('week') ? parseInt(q.get('week'), 10) : null
   };
   var DURATION = parseInt(q.get('duration') || '8', 10);
   var SOUND = flag('sound', true), TICKER = flag('ticker', true);
+  var VOLUME = Math.max(0, Math.min(1, parseFloat(q.get('volume') || '0.3')));  // quiet by default
   if (flag('bg', false)) document.body.className = 'bg';
 
   // window sizes in 1080p TV pixels, turned into a share of the screen width
@@ -76,8 +77,9 @@
             var o = ctx.createOscillator(), g = ctx.createGain();
             o.frequency.value = n[0] * h; o.type = 'sine';
             g.gain.setValueAtTime(0, t);
-            g.gain.linearRampToValueAtTime([0.22, 0.1, 0.04][i], t + 0.01);
-            g.gain.setValueAtTime([0.22, 0.1, 0.04][i], t + n[1] - 0.06);
+            var lvl = [0.22, 0.1, 0.04][i] * VOLUME;
+            g.gain.linearRampToValueAtTime(lvl, t + 0.01);
+            g.gain.setValueAtTime(lvl, t + n[1] - 0.06);
             g.gain.linearRampToValueAtTime(0, t + n[1]);
             o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + n[1] + 0.02);
           });
@@ -112,6 +114,13 @@
     var a = queue.shift();
     if (!a) { busy = false; return; }
     busy = true;
+    // show the latest score, not the one from when the play was queued
+    if (a.score && a.score.b && lastBoard) {
+      lastBoard.rows.forEach(function (r) {
+        if (r.b && r.a.name === a.score.a.name && r.b.name === a.score.b.name) a.score = r;
+      });
+    }
+    if (a.kind === 'scores' && lastBoard) a.lines = lastBoard.rows;
     var isBoard = a.kind === 'scores' || a.kind === 'matchups', f = isBoard ? big : card;
     if (isBoard) {
       var rows = (a.lines || []).length;
@@ -131,8 +140,9 @@
     if (window.console) console.log(msg);
   }
 
-  var tickerRows = 0;
+  var tickerRows = 0, lastBoard = null;
   function board(b) {
+    lastBoard = b;
     if (!TICKER) return;
     if (b.rows.length !== tickerRows) { tickerRows = b.rows.length; place(ticker, 760 * 0.75, (96 + 52 * tickerRows) * 0.75, 'top-left'); }
     post(ticker, { type: 'board', board: b });
