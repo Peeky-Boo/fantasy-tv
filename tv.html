@@ -29,7 +29,7 @@
 <iframe id="big" title="scoreboard pop-up"></iframe>
 <iframe id="ticker" title="live scores"></iframe>
 <div id="toast"></div>
-<script src="engine.js?v=20261115b"></script>
+<script src="engine.js?v=20261115c"></script>
 <script>
 (function () {
   var q = new URLSearchParams(location.search);
@@ -41,7 +41,7 @@
     everything: flag('everything', false), tdsOnly: flag('tdsonly', false), sacks: flag('sacks', true),
     alerts: q.get('alerts') || '',
     leadChanges: flag('leads', true), teamNames: flag('teamnames', false),
-    interval: parseInt(q.get('interval') || '30', 10), board: parseInt(q.get('board') || '10', 10),
+    interval: parseInt(q.get('interval') || '20', 10), board: parseInt(q.get('board') || '10', 10),
     bigPlay: parseFloat(q.get('bigplay') || '3'),
     simulate: q.get('simulate'), speed: parseFloat(q.get('speed') || '6'), steps: parseInt(q.get('steps') || '120', 10),
     week: q.get('week') ? parseInt(q.get('week'), 10) : null
@@ -80,9 +80,9 @@
   }
   var card = document.getElementById('card'), big = document.getElementById('big'), ticker = document.getElementById('ticker');
   var pos = q.get('position') || S[2];
-  card.src = 'alert.html?v=20261115b&embed=1&theme=' + style;
-  big.src = 'alert.html?v=20261115b&embed=1&theme=' + style;
-  ticker.src = 'alert.html?v=20261115b&embed=1&board=1&theme=' + style;
+  card.src = 'alert.html?v=20261115c&embed=1&theme=' + style;
+  big.src = 'alert.html?v=20261115c&embed=1&theme=' + style;
+  ticker.src = 'alert.html?v=20261115c&embed=1&board=1&theme=' + style;
   place(card, S[0], S[1], pos);
 
   // ---------------------------------------------------------------- sounds

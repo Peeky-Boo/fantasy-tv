@@ -268,8 +268,11 @@
   Engine.prototype.fetch = function () {
     if (this.sim) return Promise.resolve(this.sim.frame());
     var id = this.league.league_id;
-    return Promise.all([getJSON(API + '/league/' + id + '/matchups/' + this.week),
-                        getJSON(API + '/stats/nfl/regular/' + this.season + '/' + this.week).catch(function () { return {}; })])
+    // Sleeper's CDN can serve these up to 6 minutes stale; a changing ?t= always gets a fresh copy.
+    // It changes every 10 s, so several TVs in a league still share one copy.
+    var t = '?t=' + Math.floor(Date.now() / 10000);
+    return Promise.all([getJSON(API + '/league/' + id + '/matchups/' + this.week + t),
+                        getJSON(API + '/stats/nfl/regular/' + this.season + '/' + this.week + t).catch(function () { return {}; })])
       .then(function (x) { return { rows: x[0] || [], stats: x[1] || {} }; });
   };
 
