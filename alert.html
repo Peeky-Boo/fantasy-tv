@@ -118,7 +118,7 @@
   .live i { width: 1.4vw; height: 1.4vw; border-radius: 50%; background: #ff5252; animation: blink 1.2s infinite; }
   @keyframes blink { 50% { opacity: 0.2; } }
   .row { display: grid; grid-template-columns: 1.6vw 1fr auto 3vw auto 1fr 1.6vw; align-items: center; gap: 1.2vw;
-         padding: 0 3vw; height: 6.6vw; font-size: 2.7vw; font-weight: 700;
+         padding: 0 3vw; height: 7.6vw; font-size: 2.7vw; font-weight: 700;
          border-top: 0.15vw solid rgba(255,255,255,0.07);
          animation: rowIn 0.45s ease-out both; }
   .row.mine { background: rgba(255,193,7,0.12); box-shadow: inset 0.8vw 0 0 var(--gold); }
@@ -139,6 +139,12 @@
   .share { position: absolute; left: 3vw; right: 3vw; bottom: 0.6vw; height: 0.45vw; display: flex;
            border-radius: 1vw; overflow: hidden; opacity: 0.8; }
   .share b { display: block; height: 100%; transition: width 1.2s ease; }
+  /* win chance: the bar sits between the two percentages */
+  .row.odds .share { left: 10vw; right: 10vw; bottom: 1.15vw; height: 0.65vw; opacity: 0.95; }
+  .wp { position: absolute; bottom: 0.3vw; font-style: normal; font-size: 2.15vw; font-weight: 800;
+        font-variant-numeric: tabular-nums; color: var(--muted); }
+  .wp.a { left: 3vw; } .wp.b { right: 3vw; }
+  .wp.fav { color: var(--ink); }
   .row .p { position: relative; }
   .row .p.w { text-shadow: 0 0 1.6vw rgba(255,193,7,0.6); }
   .crown { display: inline-block; margin: 0 0.5vw; font-size: 2.3vw; animation: bob 2.4s ease-in-out infinite; }
@@ -293,7 +299,9 @@
       var a = r.a, b = r.b || {name: 'Bye', pts: 0, colour: '#555'};
       var wa = !preview && a.pts > b.pts, wb = !preview && b.pts > a.pts;
       var share = Math.max(0.1, a.pts + b.pts), sa = (a.pts / share * 100).toFixed(1);
-      h += '<div class="row' + (r.mine ? ' mine' : '') + '" data-k="' + esc(a.name + '|' + b.name) + '" data-lead="' + (wa ? 'a' : wb ? 'b' : '') +
+      var odds = !preview && r.b && typeof r.wp === 'number';
+      if (odds) sa = r.wp;
+      h += '<div class="row' + (r.mine ? ' mine' : '') + (odds ? ' odds' : '') + '" data-k="' + esc(a.name + '|' + b.name) + '" data-lead="' + (wa ? 'a' : wb ? 'b' : '') +
         '" style="animation-delay:' + (0.25 + i * 0.07) + 's">' +
         '<i class="dot" style="background:' + a.colour + '"></i>' +
         '<span class="n' + (wa ? ' w' : '') + '">' + esc(a.name) + crown(a.pts) + '</span>' +
@@ -303,6 +311,7 @@
         '<span class="n b' + (wb ? ' w' : '') + '">' + crown(b.pts) + esc(b.name) + '</span>' +
         '<i class="dot" style="background:' + b.colour + '"></i>' +
         (preview ? '' : '<i class="share"><b style="width:' + sa + '%;background:' + a.colour + '"></b><b style="flex:1;background:' + b.colour + '"></b></i>') +
+        (odds ? '<i class="wp a' + (r.wp >= 50 ? ' fav' : '') + '">' + r.wp + '%</i><i class="wp b' + (r.wp <= 50 ? ' fav' : '') + '">' + (100 - r.wp) + '%</i>' : '') +
         '</div>';
     });
     return h + '</div>';

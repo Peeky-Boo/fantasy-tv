@@ -52,7 +52,7 @@
         last = d.id;
         var a = d.alert, rows = (a.lines || []).length;
         alertF.style.width = ((a.kind === 'scores' || a.kind === 'matchups') ? 760 : 720) + 'px';
-        alertF.style.height = (rows ? 96 + 52 * rows : 200) + 'px';
+        alertF.style.height = (rows ? 96 + 60 * rows : 200) + 'px';
         alertF.src = 'alert.html?id=' + d.id + '&theme=' + (new URLSearchParams(location.search).get('style') || 'broadcast');
         document.getElementById('status').textContent = '#' + d.id + '  ' + a.title;
       }

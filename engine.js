@@ -345,10 +345,88 @@
 
   Engine.prototype.board = function (rows) {
     var self = this;
+    this.refreshOdds();
     return { league: (this.league.name || '').trim(), week: this.week, rows: this.pairs(rows).map(function (p) {
-      var s = self.score(p[0], p[1]); s.mine = s.a.mine || !!(s.b && s.b.mine); return s;
+      var s = self.score(p[0], p[1]); s.mine = s.a.mine || !!(s.b && s.b.mine);
+      var w = p[1] ? self.winChance(p[0], p[1]) : null;
+      if (w !== null) s.wp = w;
+      return s;
     }) };
   };
+
+  // ------------------------------------------------------------------ win chance
+  // Each team: points so far + every starter's projection (Sleeper's, in this league's scoring)
+  // scaled by how much of their game is left. The spread narrows as games finish.
+  var ESPN_TEAM = { WSH: 'WAS' };
+  Engine.prototype.refreshOdds = function () {
+    var self = this, now = Date.now();
+    if (!this.projAt || now - this.projAt > 15 * 60000) {
+      this.projAt = now;
+      getJSON(API + '/projections/nfl/regular/' + this.season + '/' + this.week).then(function (p) {
+        var pts = {};
+        for (var pid in p) pts[pid] = points(p[pid], self.scoring);
+        self.proj = pts;
+      }).catch(function () { self.projAt = 0; });
+    }
+    if (this.sim) return;   // practice runs use their own clock
+    if (!this.clockAt || now - this.clockAt > 120000) {
+      this.clockAt = now;
+      getJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard').then(function (d) {
+        var left = {};
+        (d.events || []).forEach(function (ev) {
+          var c = (ev.competitions || [])[0] || {}, st = (c.status || ev.status || {}), state = (st.type || {}).state;
+          var rem = 1;
+          if (state === 'post') rem = 0;
+          else if (state === 'in') {
+            var clock = String(st.displayClock || '15:00').split(':'), mins = Number(clock[0]) + Number(clock[1] || 0) / 60;
+            var period = Number(st.period || 1);
+            rem = period > 4 ? 0.02 : Math.max(0.02, ((4 - period) * 15 + mins) / 60);
+          }
+          (c.competitors || []).forEach(function (t) {
+            var ab = ((t.team || {}).abbreviation || '').toUpperCase();
+            left[ESPN_TEAM[ab] || ab] = rem;
+          });
+        });
+        self.left = left;
+      }).catch(function () { self.clockAt = 0; });
+    }
+  };
+
+  Engine.prototype.gameLeft = function (pid) {
+    if (this.sim) return Math.max(0, 1 - this.sim.i / this.sim.steps);
+    if (!this.left) return null;
+    var p = this.players[pid], team = p ? p[2] : (/^[A-Z]{2,3}$/.test(pid) ? pid : '');
+    var rem = this.left[team];
+    return rem === undefined ? 0 : rem;   // no game this week (bye) or already played
+  };
+
+  Engine.prototype.winChance = function (a, b) {
+    if (!this.proj) return null;
+    var self = this, sides = [a, b].map(function (r) {
+      var mean = Number(r.points || 0), v = 0;
+      (r.starters || []).forEach(function (pid) {
+        if (!pid || pid === '0') return;
+        var pr = self.proj[pid], rem = self.gameLeft(pid);
+        if (rem === null) { mean = NaN; return; }
+        if (!pr || rem <= 0) return;
+        mean += pr * rem;
+        v += Math.pow(0.75 * pr, 2) * rem;
+      });
+      return { mean: mean, v: v };
+    });
+    if (isNaN(sides[0].mean) || isNaN(sides[1].mean)) return null;
+    var diff = sides[0].mean - sides[1].mean, sd = Math.sqrt(sides[0].v + sides[1].v);
+    var p = sd < 0.01 ? (diff > 0 ? 1 : diff < 0 ? 0 : 0.5) : normCdf(diff / sd);
+    var pct = Math.round(p * 100);
+    if (sd >= 0.01) pct = Math.min(99, Math.max(1, pct));   // only 100% when it's over
+    return pct;
+  };
+
+  function normCdf(z) {   // standard normal, Abramowitz and Stegun 7.1.26
+    var t = 1 / (1 + 0.3275911 * Math.abs(z) / Math.SQRT2);
+    var y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-z * z / 2);
+    return z >= 0 ? (1 + y) / 2 : (1 - y) / 2;
+  }
 
   Engine.prototype.scoreboard = function (rows, final) {
     var b = this.board(rows);

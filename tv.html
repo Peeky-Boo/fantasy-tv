@@ -27,7 +27,7 @@
 <iframe id="big" title="scoreboard pop-up"></iframe>
 <iframe id="ticker" title="live scores"></iframe>
 <div id="toast"></div>
-<script src="engine.js"></script>
+<script src="engine.js?v=20261115"></script>
 <script>
 (function () {
   var q = new URLSearchParams(location.search);
@@ -78,9 +78,9 @@
   }
   var card = document.getElementById('card'), big = document.getElementById('big'), ticker = document.getElementById('ticker');
   var pos = q.get('position') || S[2];
-  card.src = 'alert.html?embed=1&theme=' + style;
-  big.src = 'alert.html?embed=1&theme=' + style;
-  ticker.src = 'alert.html?embed=1&board=1&theme=' + style;
+  card.src = 'alert.html?v=20261115&embed=1&theme=' + style;
+  big.src = 'alert.html?v=20261115&embed=1&theme=' + style;
+  ticker.src = 'alert.html?v=20261115&embed=1&board=1&theme=' + style;
   place(card, S[0], S[1], pos);
 
   // ---------------------------------------------------------------- sounds
@@ -155,7 +155,7 @@
     var isBoard = a.kind === 'scores' || a.kind === 'matchups', f = isBoard ? big : card;
     if (isBoard) {
       var rows = (a.lines || []).length;
-      place(big, 760, 96 + 52 * rows, S[2] === 'bottom-center' ? 'top-right' : pos);
+      place(big, 760, 96 + 60 * rows, S[2] === 'bottom-center' ? 'top-right' : pos);
     }
     post(f, { type: 'alert', alert: a });
     f.className = 'on';
@@ -176,7 +176,7 @@
   function board(b) {
     lastBoard = b;
     if (!TICKER) return;
-    if (b.rows.length !== tickerRows) { tickerRows = b.rows.length; place(ticker, 760 * 0.75, (96 + 52 * tickerRows) * 0.75, 'top-left'); }
+    if (b.rows.length !== tickerRows) { tickerRows = b.rows.length; place(ticker, 760 * 0.75, (96 + 60 * tickerRows) * 0.75, 'top-left'); }
     var scores = b.rows.map(function (r) { return r.a.pts + ':' + (r.b ? r.b.pts : ''); }).join('|');
     var changed = lastScores !== null && scores !== lastScores;
     var first = lastScores === null;
