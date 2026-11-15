@@ -12,10 +12,12 @@
       linear-gradient(180deg, #2f6b2f, #1f4f22 60%, #173d1a); }
   body.bg:after { content: "your TV picture"; position: fixed; left: 50%; top: 55%; transform: translate(-50%, -50%);
                   color: rgba(255,255,255,0.22); font-size: 3vw; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-  iframe { position: fixed; border: 0; background: transparent; visibility: hidden; }
+  /* every window is laid out at twice the size and shrunk by half: on a Fire TV the page is drawn
+     at half scale, and the TV's browser enlarges any text under 8 px, which would push things out of place */
+  iframe { position: fixed; border: 0; background: transparent; visibility: hidden; transform: scale(0.5); }
   /* the corner scoreboard fades and slides rather than blinking on and off */
-  #ticker { visibility: visible; opacity: 0; transform: translateX(-3vw); transition: opacity 0.45s ease, transform 0.45s ease; }
-  #ticker.on { opacity: 1; transform: none; }
+  #ticker { visibility: visible; opacity: 0; transform: translateX(-3vw) scale(0.5); transition: opacity 0.45s ease, transform 0.45s ease; }
+  #ticker.on { opacity: 1; transform: scale(0.5); }
   iframe.on { visibility: visible; }
   #toast { position: fixed; left: 1.2vw; bottom: 1.2vw; max-width: 45vw; padding: 0.7vw 1.2vw; border-radius: 0.8vw;
            background: rgba(10,14,22,0.85); color: #e9edf3; font-size: 1.1vw; opacity: 0; transition: opacity 0.4s; }
@@ -27,7 +29,7 @@
 <iframe id="big" title="scoreboard pop-up"></iframe>
 <iframe id="ticker" title="live scores"></iframe>
 <div id="toast"></div>
-<script src="engine.js?v=20261115"></script>
+<script src="engine.js?v=20261115b"></script>
 <script>
 (function () {
   var q = new URLSearchParams(location.search);
@@ -69,18 +71,18 @@
   var S = STYLES[style] || STYLES.broadcast;
   var vw = function (px) { return (px * size / 19.2) + 'vw'; };
   function place(el, w, h, where) {
-    el.style.width = vw(w); el.style.height = vw(h);
+    el.style.width = vw(w * 2); el.style.height = vw(h * 2);   // shrunk back by scale(0.5) in the CSS
     el.style.top = el.style.bottom = el.style.left = el.style.right = 'auto';
     var m = vw(24);
-    if (where === 'top-right') { el.style.top = m; el.style.right = m; }
-    else if (where === 'top-left') { el.style.top = m; el.style.left = m; }
-    else { el.style.bottom = m; el.style.left = 'calc(50% - ' + (w * size / 38.4) + 'vw)'; }
+    if (where === 'top-right') { el.style.top = m; el.style.right = m; el.style.transformOrigin = 'top right'; }
+    else if (where === 'top-left') { el.style.top = m; el.style.left = m; el.style.transformOrigin = 'top left'; }
+    else { el.style.bottom = m; el.style.left = 'calc(50% - ' + (w * size / 19.2) + 'vw)'; el.style.transformOrigin = 'bottom center'; }
   }
   var card = document.getElementById('card'), big = document.getElementById('big'), ticker = document.getElementById('ticker');
   var pos = q.get('position') || S[2];
-  card.src = 'alert.html?v=20261115&embed=1&theme=' + style;
-  big.src = 'alert.html?v=20261115&embed=1&theme=' + style;
-  ticker.src = 'alert.html?v=20261115&embed=1&board=1&theme=' + style;
+  card.src = 'alert.html?v=20261115b&embed=1&theme=' + style;
+  big.src = 'alert.html?v=20261115b&embed=1&theme=' + style;
+  ticker.src = 'alert.html?v=20261115b&embed=1&board=1&theme=' + style;
   place(card, S[0], S[1], pos);
 
   // ---------------------------------------------------------------- sounds
@@ -155,7 +157,7 @@
     var isBoard = a.kind === 'scores' || a.kind === 'matchups', f = isBoard ? big : card;
     if (isBoard) {
       var rows = (a.lines || []).length;
-      place(big, 760, 96 + 60 * rows, S[2] === 'bottom-center' ? 'top-right' : pos);
+      place(big, 760, 112 + 66 * rows, S[2] === 'bottom-center' ? 'top-right' : pos);
     }
     post(f, { type: 'alert', alert: a });
     f.className = 'on';
@@ -176,7 +178,7 @@
   function board(b) {
     lastBoard = b;
     if (!TICKER) return;
-    if (b.rows.length !== tickerRows) { tickerRows = b.rows.length; place(ticker, 760 * 0.75, (96 + 60 * tickerRows) * 0.75, 'top-left'); }
+    if (b.rows.length !== tickerRows) { tickerRows = b.rows.length; place(ticker, 760 * 0.75, (112 + 66 * tickerRows) * 0.75, 'top-left'); }
     var scores = b.rows.map(function (r) { return r.a.pts + ':' + (r.b ? r.b.pts : ''); }).join('|');
     var changed = lastScores !== null && scores !== lastScores;
     var first = lastScores === null;

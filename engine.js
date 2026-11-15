@@ -388,7 +388,19 @@
           });
         });
         self.left = left;
-      }).catch(function () { self.clockAt = 0; });
+      }).catch(function () {
+        // backup if ESPN doesn't answer: Sleeper's schedule says not started / in progress / finished
+        getJSON('https://api.sleeper.com/schedule/nfl/regular/' + self.season).then(function (games) {
+          var left = {};
+          (games || []).forEach(function (g) {
+            if (Number(g.week) !== Number(self.week)) return;
+            var rem = g.status === 'complete' ? 0 : g.status === 'in_game' ? 0.5 : 1;
+            left[g.home] = rem; left[g.away] = rem;
+          });
+          self.left = left;
+          self.clockAt = Date.now() - 60000;   // try ESPN again in a minute
+        }).catch(function () { self.clockAt = 0; });
+      });
     }
   };
 

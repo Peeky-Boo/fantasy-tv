@@ -140,8 +140,11 @@
            border-radius: 1vw; overflow: hidden; opacity: 0.8; }
   .share b { display: block; height: 100%; transition: width 1.2s ease; }
   /* win chance: the bar sits between the two percentages */
-  .row.odds .share { left: 10vw; right: 10vw; bottom: 1.15vw; height: 0.65vw; opacity: 0.95; }
-  .wp { position: absolute; bottom: 0.3vw; font-style: normal; font-size: 2.15vw; font-weight: 800;
+  /* names and scores on the top half of the row, the win-chance bar on its own line below */
+  .row.odds { align-items: start; padding-top: 0.9vw; }
+  .row.odds > .dot { margin-top: 0.75vw; }
+  .row.odds .share { left: 9vw; right: 9vw; bottom: 1.25vw; height: 0.6vw; opacity: 0.95; }
+  .wp { position: absolute; bottom: 0.45vw; font-style: normal; font-size: 1.8vw; line-height: 1; font-weight: 800;
         font-variant-numeric: tabular-nums; color: var(--muted); }
   .wp.a { left: 3vw; } .wp.b { right: 3vw; }
   .wp.fav { color: var(--ink); }
