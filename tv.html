@@ -29,7 +29,7 @@
 <iframe id="big" title="scoreboard pop-up"></iframe>
 <iframe id="ticker" title="live scores"></iframe>
 <div id="toast"></div>
-<script src="engine.js?v=20261115c"></script>
+<script src="engine.js?v=20261115d"></script>
 <script>
 (function () {
   var q = new URLSearchParams(location.search);
@@ -80,9 +80,9 @@
   }
   var card = document.getElementById('card'), big = document.getElementById('big'), ticker = document.getElementById('ticker');
   var pos = q.get('position') || S[2];
-  card.src = 'alert.html?v=20261115c&embed=1&theme=' + style;
-  big.src = 'alert.html?v=20261115c&embed=1&theme=' + style;
-  ticker.src = 'alert.html?v=20261115c&embed=1&board=1&theme=' + style;
+  card.src = 'alert.html?v=20261115d&embed=1&theme=' + style;
+  big.src = 'alert.html?v=20261115d&embed=1&theme=' + style;
+  ticker.src = 'alert.html?v=20261115d&embed=1&board=1&theme=' + style;
   place(card, S[0], S[1], pos);
 
   // ---------------------------------------------------------------- sounds

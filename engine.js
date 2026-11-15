@@ -267,13 +267,39 @@
 
   Engine.prototype.fetch = function () {
     if (this.sim) return Promise.resolve(this.sim.frame());
-    var id = this.league.league_id;
+    var self = this, id = this.league.league_id;
     // Sleeper's CDN can serve these up to 6 minutes stale; a changing ?t= always gets a fresh copy.
     // It changes every 10 s, so several TVs in a league still share one copy.
     var t = '?t=' + Math.floor(Date.now() / 10000);
     return Promise.all([getJSON(API + '/league/' + id + '/matchups/' + this.week + t),
                         getJSON(API + '/stats/nfl/regular/' + this.season + '/' + this.week + t).catch(function () { return {}; })])
-      .then(function (x) { return { rows: x[0] || [], stats: x[1] || {} }; });
+      .then(function (x) { return self.fromStats(x[0] || [], x[1] || {}); });
+  };
+
+  // Sleeper's stats feed runs up to a minute ahead of its matchups feed, so work each starter's points
+  // out from the stats with the league's scoring (checked: identical to Sleeper's). Both feeds sometimes
+  // answer from an older copy for a poll, so a player's points only go down if two polls in a row agree.
+  Engine.prototype.fromStats = function (rows, stats) {
+    var self = this, sc = this.scoring, keep = this.kept || (this.kept = {});
+    if (!sc || !Object.keys(stats).length) return { rows: rows, stats: stats };
+    var outStats = {};
+    rows = rows.map(function (r) {
+      var pp = {}, tot = 0;
+      (r.starters || []).forEach(function (pid) {
+        if (!pid || pid === '0') return;
+        var st = stats[pid] || {}, pts = points(st, sc), k = keep[pid];
+        if (k && pts < k.pts - 0.05 && !(k.drop && Math.abs(k.drop - pts) < 0.05)) {
+          k.drop = pts; st = k.st; pts = k.pts;          // looks like a stale copy: hold on to what we had
+        } else {
+          keep[pid] = { pts: pts, st: st };
+        }
+        outStats[pid] = st; pp[pid] = pts; tot += pts;
+      });
+      var o = {}; for (var f in r) o[f] = r[f];
+      o.players_points = pp; o.points = r2(tot);
+      return o;
+    });
+    return { rows: rows, stats: outStats };
   };
 
   Engine.prototype.loop = function () {
