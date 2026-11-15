@@ -14,10 +14,10 @@
                   color: rgba(255,255,255,0.22); font-size: 3vw; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
   /* every window is laid out at twice the size and shrunk by half: on a Fire TV the page is drawn
      at half scale, and the TV's browser enlarges any text under 8 px, which would push things out of place */
-  iframe { position: fixed; border: 0; background: transparent; visibility: hidden; transform: scale(0.5); }
+  iframe { position: fixed; border: 0; background: transparent; visibility: hidden; transform: translate(var(--sx, 0), var(--sy, 0)) scale(0.5); }
   /* the corner scoreboard fades and slides rather than blinking on and off */
-  #ticker { visibility: visible; opacity: 0; transform: translateX(-3vw) scale(0.5); transition: opacity 0.45s ease, transform 0.45s ease; }
-  #ticker.on { opacity: 1; transform: scale(0.5); }
+  #ticker { visibility: visible; opacity: 0; transform: translate(calc(var(--sx, 0px) - 3vw), var(--sy, 0)) scale(0.5); transition: opacity 0.45s ease, transform 0.45s ease; }
+  #ticker.on { opacity: 1; transform: translate(var(--sx, 0), var(--sy, 0)) scale(0.5); }
   iframe.on { visibility: visible; }
   #toast { position: fixed; left: 1.2vw; bottom: 1.2vw; max-width: 45vw; padding: 0.7vw 1.2vw; border-radius: 0.8vw;
            background: rgba(10,14,22,0.85); color: #e9edf3; font-size: 1.1vw; opacity: 0; transition: opacity 0.4s; }
@@ -194,6 +194,15 @@
     hideTimer = setTimeout(function () { ticker.className = ''; }, first ? 10000 : 12000);
   }
   // with a delay set, alerts and scores wait before appearing (the showcase never waits)
+  // OLED care: every 2 minutes nudge everything a few pixels round a small square, so nothing sits
+  // on exactly the same pixels all afternoon (unnoticeable from the sofa; harmless on other TVs)
+  var SHIFT = [[0, 0], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]], shiftAt = 0;
+  setInterval(function () {
+    shiftAt = (shiftAt + 1) % SHIFT.length;
+    var px = 6 / 19.2;   // 6 TV pixels
+    document.documentElement.style.setProperty('--sx', (SHIFT[shiftAt][0] * px) + 'vw');
+    document.documentElement.style.setProperty('--sy', (SHIFT[shiftAt][1] * px) + 'vw');
+  }, 120000);
   var later = function (fn) { return function (x) { if (DELAY && !SHOWCASE && !BRIDGE) setTimeout(function () { fn(x); }, DELAY); else fn(x); }; };
 
   if (flag('demo', false)) {
